@@ -1,16 +1,47 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted, onUnmounted, defineProps } from 'vue'; // Import defineProps
 import DefaultButtonComponent from './DefaultButtonComponent.vue';
 
+// Define the prop that will receive the HeroComponent's DOM element ref
+const props = defineProps({
+  heroElementRef: {
+    type: Object, // It's a ref object, so type Object is appropriate
+    default: null
+  }
+});
+
 const isMenuOpen = ref(false);
+const isScrolled = ref(false);
 
 const toggleMenu = () => {
   isMenuOpen.value = !isMenuOpen.value;
 };
+
+const handleScroll = () => {
+  if (props.heroElementRef && props.heroElementRef.value) {
+    const heroBottom = props.heroElementRef.value.getBoundingClientRect().bottom;
+    isScrolled.value = heroBottom <= 0;
+  } else {
+    // Fallback: This part should ideally not be hit if the ref passing works.
+    // If you still want a fallback, keep a default pixel threshold or handle accordingly.
+    const scrollThreshold = 600; // Fallback value
+    isScrolled.value = window.scrollY > scrollThreshold;
+  }
+  console.log('isScrolled:', isScrolled.value);
+};
+
+onMounted(() => {
+  window.addEventListener('scroll', handleScroll);
+  handleScroll(); // Call once on mount to set initial state
+});
+
+onUnmounted(() => {
+  window.removeEventListener('scroll', handleScroll);
+});
 </script>
 
 <template>
-  <nav class="navbar">
+  <nav class="navbar" :class="{ 'navbar--scrolled': isScrolled }">
     <div class="navbar__logo">
       <img src="/src/assets/images/ChocoLushLogo.png" alt="Chocolush Logo" />
     </div>
@@ -53,8 +84,19 @@ const toggleMenu = () => {
   align-items: center;
   height: 6em;
   padding: 0 1.5em;
-  position: relative;
+  position: fixed; 
+  top: 0;         
+  left: 0;     
+  width: 100%;    
   justify-content: space-between;
+  background-color: transparent;
+  transition: background-color 0.3s ease-in-out;
+  z-index: 1000;
+}
+
+.navbar--scrolled {
+  background-color: white; /* White background when scrolled past hero */
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1); /* Optional: add a subtle shadow */
 }
 
 .navbar__logo {
