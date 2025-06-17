@@ -24,27 +24,19 @@ onMounted(() => {
             </h1>
             <p class="hero-description">En Chocolush, te ofrecemos los mejores productos para satisfacer tus antojos de chocolate. Descubre una selección exquisita y de alta calidad, pensada para los verdaderos amantes del chocolate.</p>
 
-            <form action="#" method="POST" class="email-signup-form">
-              <div class="form-input-wrapper">
-                <div class="form-input-group">
-                  <div class="form-input-field">
-                    <label for="email" class="sr-only">Email address</label>
-                    <input
-                      type="email"
-                      name="email"
-                      id="email"
-                      placeholder="Enter email to get started"
-                      class="email-input"
-                      required=""
-                    />
-                  </div>
-                </div>
-                <button type="submit" class="submit-button">
-                  Try 14 days free
-                </button>
+            
+            <div class="form-input-wrapper">
+              <div class="form-input-group">
+                <div class="form-input-field">
+                  <p class="form-info">Compra los mejores dulces</p>
+                </div>                
               </div>
-            </form>
-            <p class="form-info">Instant access . No credit card required</p>
+              <button type="submit" class="submit-button">
+                  Insta Cum Aqui
+                </button>
+            </div>
+            
+            
           </div>
 
           <div class="hero-circular-text">
@@ -75,137 +67,7 @@ onMounted(() => {
   </div>
 </template>
 
-<style>
-/* Basic Reset & Body Styles */
-body {
-  margin: 0;
-  font-family: sans-serif; /* You can pick a specific font */
-  line-height: 1.5;
-  color: #000; /* Default text color */
-}
-
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap; /* added line */
-  border-width: 0;
-}
-
-/* --- Header Section --- */
-.main-header {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 10; /* Ensures header is on top */
-  width: 100%;
-}
-
-.header-inner {
-  padding-left: 1rem; /* px-4 */
-  padding-right: 1rem; /* px-4 */
-  margin-left: auto;
-  margin-right: auto;
-  max-width: 1280px; /* Equivalent to a common Tailwind max-w-screen-xl, adjust as needed */
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: 4rem; /* h-16 */
-}
-
-/* Larger screens (lg:h-20) */
-@media (min-width: 1024px) {
-  .header-inner {
-    height: 5rem; /* h-20 */
-  }
-}
-
-.header-logo {
-  flex-shrink: 0;
-}
-
-.logo-link {
-  display: flex;
-}
-
-.logo-img {
-  width: auto;
-  height: 2rem; /* h-8 */
-}
-
-.hamburger-menu-button {
-  display: inline-flex;
-  padding: 0.5rem; /* p-2 */
-  color: #000;
-  transition: all 0.2s; /* transition-all duration-200 */
-  border-radius: 0.375rem; /* rounded-md */
-  background: none;
-  border: none;
-  cursor: pointer;
-}
-
-/* Hide on larger screens (lg:hidden) */
-@media (min-width: 1024px) {
-  .hamburger-menu-button {
-    display: none;
-  }
-}
-
-.hamburger-menu-button:focus,
-.hamburger-menu-button:hover {
-  background-color: #f3f4f6; /* focus:bg-gray-100 hover:bg-gray-100 */
-}
-
-.hamburger-icon-closed {
-  display: block; /* block w-6 h-6 */
-  width: 1.5rem;
-  height: 1.5rem;
-}
-
-.hamburger-icon-open {
-  display: none; /* hidden w-6 h-6 */
-  width: 1.5rem;
-  height: 1.5rem;
-}
-
-/* You'd need JavaScript to toggle these classes based on menu open/close state */
-/* For example, if a parent has .menu-open class:
-.menu-open .hamburger-icon-closed { display: none; }
-.menu-open .hamburger-icon-open { display: block; }
-*/
-
-.main-nav {
-  display: none; /* hidden ml-auto lg:flex */
-  margin-left: auto; /* ml-auto */
-  align-items: center; /* lg:items-center */
-  justify-content: center; /* lg:justify-center */
-}
-
-/* Show on larger screens (lg:flex) */
-@media (min-width: 1024px) {
-  .main-nav {
-    display: flex;
-    gap: 2.5rem; /* lg:space-x-10 (40px) */
-  }
-}
-
-.nav-link {
-  font-size: 1rem; /* text-base */
-  font-weight: 600; /* font-semibold */
-  color: #000;
-  transition: all 0.2s; /* transition-all duration-200 */
-  text-decoration: none;
-}
-
-.nav-link:hover {
-  opacity: 0.8; /* hover:text-opacity-80 */
-}
-
+<style >
 .call-to-action-button {
   display: inline-flex;
   align-items: center;
@@ -321,7 +183,7 @@ body {
 .hero-title {
   font-size: 2.25rem; /* text-4xl */
   font-weight: 700; /* font-bold */
-  color: #000;
+  color: var(--second-color);
 }
 
 /* Small screens (sm:text-6xl xl:text-8xl) */
@@ -341,7 +203,7 @@ body {
 .hero-description {
   margin-top: 2rem; /* mt-8 */
   font-size: 1.25rem; /* text-xl */
-  color: #000;
+  color: var(--main-color);
 }
 
 .email-signup-form {
@@ -406,23 +268,6 @@ body {
   color: #4b5563; /* focus-within:text-gray-600 */
 }
 
-.email-input {
-  display: block;
-  width: 100%;
-  padding: 1rem; /* px-4 py-4 */
-  font-size: 1rem; /* text-base */
-  text-align: center; /* text-center */
-  color: #000;
-  transition: all 0.2s; /* transition-all duration-200 */
-  border: 1px solid transparent; /* border-transparent */
-  border-radius: 9999px; /* rounded-full */
-  outline: none; /* Remove default outline */
-  caret-color: #f97316; /* caret-orange-500 */
-}
-
-.email-input::placeholder {
-  color: #6b7280; /* placeholder-gray-500 */
-}
 
 /* Small screens (sm:text-left focus:border-transparent focus:ring-0) */
 @media (min-width: 640px) {
@@ -443,7 +288,7 @@ body {
   font-weight: 600; /* font-semibold */
   color: #fff;
   transition: all 0.2s; /* transition-all duration-200 */
-  background-color: #f97316; /* bg-orange-500 */
+  background-color: var(--main-color); /* bg-orange-500 */
   border: 1px solid transparent; /* border border-transparent */
   border-radius: 9999px; /* rounded-full */
   cursor: pointer;
@@ -460,13 +305,14 @@ body {
 
 .submit-button:hover,
 .submit-button:focus {
-  background-color: #ea580c; /* hover:bg-orange-600 focus:bg-orange-600 */
+  background-color: var(--hover-color); /* hover:bg-orange-600 focus:bg-orange-600 */
 }
 
 .form-info {
-  margin-top: 1.25rem; /* mt-5 */
-  font-size: 1rem; /* text-base */
-  color: #000;
+  padding-left: 1em;
+  margin-top: 1.25rem; 
+  font-size: 1rem; 
+  color: #3c0d0d;
 }
 
 .hero-circular-text {
