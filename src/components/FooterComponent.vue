@@ -1,40 +1,61 @@
 <template>
-  <footer class="app-footer">
-    <div class="footer-content-area">
-      <div class="footer-left">
-        <div class="ferrero-logo">
-          <img src="/src/assets/images/ChocoLushLogo.png" alt="Chocolush Logo" />
+  <footer class="main-footer">
+    <div class="footer-content-wrapper">
+      <div class="footer-top-section">
+        <div class="footer-brand">
+          <img src="/src/assets/images/ChocoLushLogo.png" alt="ChocoLush Logo" class="footer-logo">
+          <div class="social-icons">
+            <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+            <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+            <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+          </div>
         </div>
-        <p class="copyright">&copy; Chocolush - Todos los derechos reservados</p>
+
+        <div class="footer-links">
+          <div class="footer-column">
+            <h5>Empresa</h5>
+            <ul>
+              <li><a href="#">Sobre Nosotros</a></li>
+              <li><a href="#">Blog</a></li>
+              <li><a href="#">Nuestra Historia</a></li>
+              <li><a href="#">Carreras</a></li>
+            </ul>
+          </div>
+
+          <div class="footer-column">
+            <h5>Productos</h5>
+            <ul>
+              <li><a href="#">Chocolates</a></li>
+              <li><a href="#">Dulces</a></li>
+              <li><a href="#">Ediciones Especiales</a></li>
+              <li><a href="#">Personalizados</a></li>
+              <li><a href="#">Tiendas</a></li>
+            </ul>
+          </div>
+
+          <div class="footer-column">
+            <h5>Soporte</h5>
+            <ul>
+              <li><a href="#">Preguntas Frecuentes</a></li>
+              <li><a href="#">Contacto</a></li>
+              <li><a href="#">Envíos</a></li>
+              <li><a href="#">Devoluciones</a></li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="footer-cta">
+          <button class="cta-button">¡Compra Ahora!</button>
+          <p class="cta-slogan">Endulza tu día con ChocoLush.</p>
+        </div>
       </div>
 
-      <div class="footer-links-grid">
-        <ul>
-          <li><a href="#">Chocolush</a></li>
-          <li><a href="#">Mapa del Sitio</a></li>
-          <li><a href="#">Visita Nuestro Local</a></li>
-        </ul>
-        <ul>
-          <li><a href="#">Política Sobre Cookies</a></li>
-          <li><a href="#">Política de Privacidad</a></li>
-        </ul>
-        <ul>
-          <li><a href="#">Requerimientos Técnicos</a></li>
-          <li><a href="#">Sobre Nuestra Publicidad</a></li>
-        </ul>
-        <ul>
-          <li><a href="#">Aspectos Legales</a></li>
-        </ul>
-      </div>
-
-      <div class="footer-right">
-        <div class="language-selector">
-          <span>EN</span> | <span>ES</span>
-        </div>
-        <div class="globe-icon-container">
-          <svg class="globe-icon" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.83-7-7.93 0-.62.08-1.22.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.93-2.31c-.57-.27-1.1-.96-1.6-1.63L11 10.93V8h3c1.1 0 2 .9 2 2v2.16l2.16 2.16c.36-.62.64-1.28.84-1.95L18 9l-.69-.9L14 5.92V5h-2v1.92l-3.31 3.31C8.24 10.02 8 10.49 8 11c0 1.2.66 2.5 1.5 3.5l1.09 1.09 3.09 3.09c1.03-.69 1.83-1.6 2.53-2.67zM15 13h-2v-2h2v2z"/>
-          </svg>
+      <div class="footer-bottom-section">
+        <p class="copyright">© {{ currentYear }} ChocoLush. Todos los derechos reservados.</p>
+        <div class="legal-links">
+          <a href="#">Términos y Condiciones</a>
+          <a href="#">Política de Privacidad</a>
+          <a href="#">Política de Cookies</a>
         </div>
       </div>
     </div>
@@ -42,168 +63,232 @@
 </template>
 
 <script setup>
-// No script specific logic needed for this static footer component
+import { ref } from 'vue';
+
+const currentYear = ref(new Date().getFullYear());
 </script>
 
 <style scoped>
-.app-footer {
-  width: 100%;
-  background-color: #f3410e; /* The primary red/orange color from your screenshot */
-  color: white;
-  position: relative; /* Essential for positioning the wave container */
-  padding-top: 0; /* No top padding here; wave will overlap from the top */
-  overflow: hidden; /* Ensures wave doesn't spill out horizontally */
-  font-family: 'Inter', sans-serif;
+.main-footer {
+  background-color: #fffaf7; /* A light, creamy color, similar to the image's background */
+  padding: 3em 2em; /* Ample padding */
+  color: #5C4033; /* Dark brown for text */
+  font-family: Arial, sans-serif; /* Example font */
 }
 
-
-/* This targets the main wave path, which should be the color of the section ABOVE the footer */
-.footer-wave-svg path:first-child {
-  /* IMPORTANT: Set this to the exact background color of the section immediately above the footer */
-  fill: #feebd0; /* This should match the background of the div directly above your footer */
-}
-
-.footer-content-area {
-  position: relative; /* Z-index works on positioned elements */
-  z-index: 2; /* Make sure content is above the wave */
-  max-width: 1200px;
+.footer-content-wrapper {
+  max-width: 1200px; /* Max width to center content */
   margin: 0 auto;
-  padding: 2em;
-  padding-top: 6em; /* Add top padding here to push content down below the wave */
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  flex-wrap: wrap;
-  gap: 2em;
 }
 
-.footer-left {
-  flex-basis: 20%;
+.footer-top-section {
+  display: flex;
+  flex-wrap: wrap; /* Allows wrapping on smaller screens */
+  justify-content: space-between;
+  gap: 2em; /* Space between flex items */
+  padding-bottom: 2em;
+  border-bottom: 1px solid rgba(92, 64, 51, 0.1); /* Subtle divider */
+}
+
+.footer-brand {
+  flex-shrink: 0; /* Prevents shrinking */
   display: flex;
   flex-direction: column;
   align-items: flex-start;
+  min-width: 150px; /* Ensures brand section doesn't get too small */
 }
 
-.ferrero-logo {
-  font-family: 'Arial Black', sans-serif;
-  font-size: 1.8em;
-  font-weight: bold;
-  color: white;
-  margin-bottom: 0.5em;
-  letter-spacing: 1px;
-}
-
-.ferrero-logo img {
-  height: 2em;
+.footer-logo {
+  height: 3em; /* Adjust size as needed */
   width: auto;
-  margin-right: 0.5em;
+  margin-bottom: 1em;
 }
 
-.copyright {
-  font-size: 0.85em;
-  opacity: 0.8;
+.social-icons a {
+  color: #A65300; /* Orange-brown for icons */
+  font-size: 1.5em;
+  margin-right: 1em;
+  transition: color 0.3s ease;
 }
 
-.footer-links-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 1em 2em;
-  flex-basis: 50%;
-  min-width: 400px;
+.social-icons a:hover {
+  color: #8C4500; /* Darker orange-brown on hover */
 }
 
-.footer-links-grid ul {
+.footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2em;
+  flex-grow: 1; /* Allows link columns to take up available space */
+  justify-content: space-around; /* Distribute columns evenly */
+}
+
+.footer-column {
+  min-width: 120px; /* Minimum width for each column */
+}
+
+.footer-column h5 {
+  color: #A60000; /* Dark red for column titles */
+  font-size: 1.1em;
+  margin-bottom: 1em;
+  white-space: nowrap; /* Prevent title from wrapping */
+}
+
+.footer-column ul {
   list-style: none;
   padding: 0;
   margin: 0;
 }
 
-.footer-links-grid a {
-  color: white;
+.footer-column li {
+  margin-bottom: 0.8em;
+}
+
+.footer-column a {
   text-decoration: none;
-  font-size: 0.9em;
-  line-height: 1.8;
-  opacity: 0.9;
-  transition: opacity 0.3s ease;
+  color: #5C4033;
+  font-size: 0.95em;
+  transition: color 0.3s ease;
 }
 
-.footer-links-grid a:hover {
-  opacity: 1;
-  color: var(--main-color);
+.footer-column a:hover {
+  color: #A65300; /* Orange-brown on hover */
 }
 
-.footer-right {
-  flex-basis: 15%;
+.footer-cta {
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
-  gap: 1em;
-}
-
-.language-selector {
-  font-size: 0.9em;
-  color: white;
-  opacity: 0.9;
-}
-
-.language-selector span {
-  cursor: pointer;
-  padding: 0 0.3em;
-  transition: opacity 0.3s ease;
-}
-
-.language-selector span:hover {
-  opacity: 1;
-}
-
-.globe-icon-container {
-  width: 40px;
-  height: 40px;
-  background-color: white;
-  border-radius: 50%;
-  display: flex;
-  justify-content: center;
   align-items: center;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  justify-content: center;
+  text-align: center;
+  min-width: 180px; /* Ensure CTA button space */
+  margin-left: 2em; /* Space from link columns */
+}
+
+.cta-button {
+  background-color: #F47B20; /* Bright orange for CTA, similar to example */
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 1em 2em;
+  font-size: 1em;
+  font-weight: bold;
   cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  white-space: nowrap; /* Prevent button text from wrapping */
 }
 
-.globe-icon {
-  width: 24px;
-  height: 24px;
-  color: #f3410e;
+.cta-button:hover {
+  background-color: #E06A1C; /* Slightly darker on hover */
+  transform: translateY(-2px);
 }
 
-/* Responsive adjustments */
-@media (max-width: 992px) {
-  .footer-content-area {
-    flex-direction: column;
-    align-items: center;
+.cta-slogan {
+  margin-top: 0.8em;
+  font-size: 0.9em;
+  color: #7D5D4E; /* Lighter brown for slogan */
+}
+
+.footer-bottom-section {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 1.5em;
+  font-size: 0.85em;
+}
+
+.copyright {
+  margin-bottom: 0.5em; /* Space on small screens */
+}
+
+.legal-links a {
+  color: #5C4033;
+  text-decoration: none;
+  margin-left: 1.5em;
+  white-space: nowrap; /* Prevent links from wrapping */
+  transition: color 0.3s ease;
+}
+
+.legal-links a:hover {
+  color: #A65300;
+}
+
+/* ---------------------------------------------------- */
+/* Mobile Styles (Adjustments for smaller screens) */
+@media (max-width: 768px) {
+  .footer-top-section {
+    flex-direction: column; /* Stack sections vertically */
+    align-items: center; /* Center items when stacked */
     text-align: center;
   }
-  .footer-left,
-  .footer-right {
-    align-items: center;
-    flex-basis: auto;
+
+  .footer-brand {
+    align-items: center; /* Center logo and social icons */
+    margin-bottom: 2em;
   }
-  .footer-links-grid {
-    grid-template-columns: repeat(2, 1fr);
+
+  .social-icons {
+    margin-top: 1em; /* Space below logo */
+  }
+
+  .footer-links {
+    flex-direction: column; /* Stack link columns */
+    align-items: center; /* Center link columns */
+    margin-bottom: 2em;
+  }
+
+  .footer-column {
+    margin-bottom: 1.5em; /* Space between stacked columns */
+    width: 100%; /* Full width for columns */
+    max-width: 250px; /* Constrain width of stacked columns */
+  }
+
+  .footer-column h5 {
+    text-align: center; /* Center column titles */
+  }
+
+  .footer-column ul {
+    text-align: center; /* Center list items */
+  }
+
+  .footer-cta {
+    margin-left: 0; /* Remove left margin */
     width: 100%;
-    max-width: 600px;
+    margin-bottom: 2em; /* Space before bottom section */
+  }
+
+  .footer-bottom-section {
+    flex-direction: column; /* Stack copyright and legal links */
     text-align: center;
   }
-  .footer-links-grid ul {
-    align-items: center;
+
+  .legal-links {
+    display: flex; /* Keep legal links in a row if possible */
+    flex-wrap: wrap; /* Allow wrapping of legal links */
+    justify-content: center;
+    margin-top: 1em;
+  }
+
+  .legal-links a {
+    margin: 0.5em 0.8em; /* Adjust spacing for stacked legal links */
   }
 }
 
-@media (max-width: 576px) {
-  .footer-links-grid {
-    grid-template-columns: 1fr;
-    gap: 0.5em 0;
+/* Adjustments for very small screens */
+@media (max-width: 480px) {
+  .main-footer {
+    padding: 2em 1em; /* Reduce padding on very small screens */
   }
-  .ferrero-logo {
-    font-size: 1.5em;
+
+  .social-icons a {
+    font-size: 1.3em;
+    margin: 0 0.5em; /* Closer spacing for social icons */
+  }
+
+  .cta-button {
+    padding: 0.8em 1.5em; /* Smaller padding for button */
+    font-size: 0.9em;
   }
 }
 </style>

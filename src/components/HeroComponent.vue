@@ -39,9 +39,6 @@ onMounted(() => {
             
           </div>
 
-          <div class="hero-circular-text">
-            <img class="circular-text-img" src="https://cdn.rareblocks.xyz/collection/celebration/images/hero/3/circular-text.png" alt="" />
-          </div>
         </div>
 
         <div class="hero-image-container">
