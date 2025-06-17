@@ -1,45 +1,3 @@
-<script setup>
-import { ref, onMounted, onUnmounted, defineProps } from 'vue'; // Import defineProps
-import DefaultButtonComponent from './DefaultButtonComponent.vue';
-
-// Define the prop that will receive the HeroComponent's DOM element ref
-const props = defineProps({
-  heroElementRef: {
-    type: Object, // It's a ref object, so type Object is appropriate
-    default: null
-  }
-});
-
-const isMenuOpen = ref(false);
-const isScrolled = ref(false);
-
-const toggleMenu = () => {
-  isMenuOpen.value = !isMenuOpen.value;
-};
-
-const handleScroll = () => {
-  if (props.heroElementRef && props.heroElementRef.value) {
-    const heroBottom = props.heroElementRef.value.getBoundingClientRect().bottom;
-    isScrolled.value = heroBottom <= 0;
-  } else {
-    // Fallback: This part should ideally not be hit if the ref passing works.
-    // If you still want a fallback, keep a default pixel threshold or handle accordingly.
-    const scrollThreshold = 600; // Fallback value
-    isScrolled.value = window.scrollY > scrollThreshold;
-  }
-  console.log('isScrolled:', isScrolled.value);
-};
-
-onMounted(() => {
-  window.addEventListener('scroll', handleScroll);
-  handleScroll(); // Call once on mount to set initial state
-});
-
-onUnmounted(() => {
-  window.removeEventListener('scroll', handleScroll);
-});
-</script>
-
 <template>
   <nav class="navbar" :class="{ 'navbar--scrolled': isScrolled }">
     <div class="navbar__logo">
@@ -50,44 +8,133 @@ onUnmounted(() => {
       <i :class="isMenuOpen ? 'fa-solid fa-times' : 'fa-solid fa-bars'"></i>
     </button>
 
-    <ul class="navbar__nav-list" :class="{ 'navbar__nav-list--open': isMenuOpen }">
-      <li class="nav-item" @click="isMenuOpen = false">
+    <ul class="navbar__nav-list desktop-nav-items">
+      <li class="nav-item">
         <router-link to="/">
           <DefaultButtonComponent text="Home"/>
         </router-link>
       </li>
-      <li class="nav-item" @click="isMenuOpen = false">
+      <li class="nav-item">
         <router-link to="/brands">
           <DefaultButtonComponent text="Brand"/>
         </router-link>
       </li>
-      <li class="nav-item" @click="isMenuOpen = false">
+      <li class="nav-item">
         <router-link to="/products">
           <DefaultButtonComponent text="Productos"/>
         </router-link>
       </li>
     </ul>
 
-    <ul class="navbar__user-section" :class="{ 'navbar__user-section--hidden': isMenuOpen }">
-      <li class="nav-item" @click="isMenuOpen = false">
+    <ul class="navbar__user-section desktop-nav-items">
+      <li class="nav-item">
         <router-link to="/user-profile">
           <i class="fas fa-user"></i>
         </router-link>
       </li>
     </ul>
+
+    <div class="offcanvas-backdrop" :class="{ 'offcanvas-backdrop--open': isMenuOpen }" @click="toggleMenu"></div>
+
+    <div class="offcanvas-menu" :class="{ 'offcanvas-menu--open': isMenuOpen }">
+      <ul class="offcanvas-nav-list">
+        <li class="offcanvas-close-button">
+          <button @click="toggleMenu"><i class="fa-solid fa-times"></i></button>
+        </li>
+        <li class="nav-item" @click="isMenuOpen = false">
+          <router-link to="/">
+            <DefaultButtonComponent text="Home"/>
+          </router-link>
+        </li>
+        <li class="nav-item" @click="isMenuOpen = false">
+          <router-link to="/brands">
+            <DefaultButtonComponent text="Brand"/>
+          </router-link>
+        </li>
+        <li class="nav-item" @click="isMenuOpen = false">
+          <router-link to="/products">
+            <DefaultButtonComponent text="Productos"/>
+          </router-link>
+        </li>
+        <li class="nav-item offcanvas-user-icon" @click="isMenuOpen = false">
+          <router-link to="/user-profile">
+            <i class="fas fa-user"></i>
+          </router-link>
+        </li>
+      </ul>
+    </div>
   </nav>
 </template>
 
+<script setup>
+import { ref, onMounted, onUnmounted, defineProps } from 'vue';
+import DefaultButtonComponent from './DefaultButtonComponent.vue';
+
+const props = defineProps({
+  heroElementRef: {
+    type: Object,
+    default: null
+  }
+});
+
+const isMenuOpen = ref(false);
+const isScrolled = ref(false);
+
+const toggleMenu = () => {
+  isMenuOpen.value = !isMenuOpen.value;
+  // Prevent scrolling on the body when the menu is open on mobile
+  // and reset when closed or when screen size changes to desktop
+  if (window.innerWidth <= 768) { // Only apply this for mobile sizes
+    if (isMenuOpen.value) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+  }
+};
+
+const handleScroll = () => {
+  if (props.heroElementRef && props.heroElementRef.value) {
+    const heroBottom = props.heroElementRef.value.getBoundingClientRect().bottom;
+    isScrolled.value = heroBottom <= 0;
+  } else {
+    const scrollThreshold = 600;
+    isScrolled.value = window.scrollY > scrollThreshold;
+  }
+};
+
+const handleResize = () => {
+  // If screen size becomes larger than mobile, close menu and reset overflow
+  if (window.innerWidth > 768 && isMenuOpen.value) {
+    isMenuOpen.value = false;
+    document.body.style.overflow = '';
+  }
+};
+
+onMounted(() => {
+  window.addEventListener('scroll', handleScroll);
+  window.addEventListener('resize', handleResize); // Add resize listener
+  handleScroll();
+});
+
+onUnmounted(() => {
+  window.removeEventListener('scroll', handleScroll);
+  window.removeEventListener('resize', handleResize); // Remove resize listener
+  document.body.style.overflow = ''; // Ensure body overflow is reset
+});
+</script>
+
 <style scoped>
+/* Base Navbar Styles (apply to both desktop and mobile as default) */
 .navbar {
   display: flex;
   align-items: center;
   height: 6em;
   padding: 0 1.5em;
-  position: fixed; 
-  top: 0;         
-  left: 0;     
-  width: 100%;    
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
   justify-content: space-between;
   background-color: transparent;
   transition: background-color 0.3s ease-in-out;
@@ -95,8 +142,8 @@ onUnmounted(() => {
 }
 
 .navbar--scrolled {
-  background-color: white; /* White background when scrolled past hero */
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1); /* Optional: add a subtle shadow */
+  background-color: white;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
 .navbar__logo {
@@ -114,30 +161,28 @@ onUnmounted(() => {
   margin-right: 0.5em;
 }
 
+/* Hamburger button - Hidden by default on desktop */
 .navbar__hamburger {
-  display: none; /* Hidden by default on desktop */
+  display: none;
   background: none;
   border: none;
   color: #4a2c2a;
   font-size: 1.5em;
   cursor: pointer;
+  z-index: 1002; /* Ensure hamburger is above offcanvas */
 }
 
-.navbar__nav-list {
-  display: flex; /* Always flex on desktop */
+/* Desktop navigation specific items (visible by default) */
+.desktop-nav-items {
+  display: flex; /* Default for desktop */
   align-items: center;
   list-style: none;
   padding: 0;
   margin: 0;
 }
 
-.navbar__user-section {
-  display: flex; /* Always flex on desktop */
-  align-items: center;
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  margin-left: auto;
+.navbar__user-section.desktop-nav-items {
+  margin-left: auto; /* Push user section to the right */
 }
 
 .navbar .nav-item {
@@ -153,66 +198,145 @@ onUnmounted(() => {
   color: #3c0d0d;
 }
 .navbar .nav-item i:hover {
-  font-size: 1.5em;
   color: #a0522d;
 }
+
+/* Offcanvas related elements - Hidden by default on desktop */
+.offcanvas-backdrop,
+.offcanvas-menu {
+  display: none; /* Hide offcanvas elements on desktop by default */
+}
+
 
 /* ---------------------------------------------------- */
 /* Mobile Styles (Max-width 768px) */
 @media (max-width: 768px) {
   .navbar {
-    flex-wrap: wrap; /* Allows items to wrap to the next line */
     padding: 1em;
-    justify-content: space-between; /* Keeps logo and hamburger on opposite ends */
-  }
-
-  .navbar__logo {
-    margin-right: 0; /* Remove margin on mobile */
   }
 
   .navbar__logo img {
     height: 1.5em;
-    width: auto;
   }
 
+  /* Show hamburger button on mobile */
   .navbar__hamburger {
-    display: block; /* Show hamburger button on mobile */
+    display: block;
   }
 
-  .navbar__nav-list {
-    display: none; /* Hidden by default on mobile */
-    flex-direction: column;
-    width: 100%; /* Takes full width when displayed */
-    margin-top: 1em;
-    text-align: center; /* Center the buttons/links */
-  }
-
-  /* When menu is open, display the nav list */
-  .navbar__nav-list--open {
-    display: flex;
-  }
-
-  .navbar__user-section {
-    display: none; /* Hide user section by default on mobile */
-  }
-
-  /* Optionally show user section within the open menu if desired,
-     or keep it hidden like this. If you want it in the menu, move
-     its HTML into navbar__nav-list and handle its display there. */
-  .navbar__user-section--hidden {
+  /* Hide desktop-specific nav elements on mobile */
+  .desktop-nav-items {
     display: none;
   }
 
-  .navbar .nav-item {
-    margin: 0.5em 0; /* Adjust vertical spacing for menu items */
-    width: 100%; /* Make each item take full width */
-    text-align: center;
+  /* Offcanvas Backdrop - ONLY display on mobile when menu is open */
+  .offcanvas-backdrop {
+    display: block; /* Show the backdrop for mobile */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent black */
+    z-index: 1000; /* Below the offcanvas menu */
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
   }
 
-  .navbar .nav-item a {
-    display: block; /* Make router-link fill the item space */
+  .offcanvas-backdrop--open {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  /* Offcanvas Menu - ONLY display on mobile and slide in/out */
+  .offcanvas-menu {
+    display: flex; /* Show the offcanvas menu for mobile */
+    position: fixed;
+    top: 0;
+    left: 0; /* Start from the left edge */
+    width: 70%; /* Adjust width as needed */
+    max-width: 300px; /* Max width for tablets */
+    height: 100vh;
+    background-color: white;
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
+    z-index: 1001;
+    transform: translateX(-100%); /* Initially hidden off-screen to the left */
+    transition: transform 0.3s ease-in-out;
+    padding: 1em;
+    flex-direction: column;
+    overflow-y: auto;
+  }
+
+  .offcanvas-menu--open {
+    transform: translateX(0); /* Slide into view */
+  }
+
+  .offcanvas-nav-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
     width: 100%;
-    padding: 1em 0; /* Add padding for clickable area */
+  }
+
+  .offcanvas-nav-list .nav-item {
+    margin: 0;
+    padding: 0.8em 0;
+    border-bottom: 1px solid #eee;
+  }
+
+  .offcanvas-nav-list .nav-item:last-of-type {
+    border-bottom: none;
+  }
+
+  .offcanvas-nav-list .nav-item a {
+    display: block;
+    padding: 0.5em 1em;
+    color: #4a2c2a;
+    text-decoration: none;
+    font-size: 1.1em;
+    transition: background-color 0.2s ease;
+  }
+
+  .offcanvas-nav-list .nav-item a:hover {
+    background-color: #f0f0f0;
+  }
+
+  .offcanvas-nav-list .nav-item .default-button {
+    width: 100%;
+    text-align: left;
+    padding: 0.5em 1em;
+    justify-content: flex-start;
+    background: none;
+    border: none;
+    color: #4a2c2a;
+    font-size: 1.1em;
+  }
+  .offcanvas-nav-list .nav-item .default-button:hover {
+      background-color: #f0f0f0;
+  }
+
+  .offcanvas-close-button {
+    text-align: right;
+    padding-bottom: 1em;
+  }
+
+  .offcanvas-close-button button {
+    background: none;
+    border: none;
+    font-size: 1.8em;
+    color: #4a2c2a;
+    cursor: pointer;
+    padding: 0.5em;
+  }
+
+  .offcanvas-user-icon {
+    padding-top: 1em;
+    text-align: left;
+  }
+  .offcanvas-user-icon i {
+    font-size: 1.8em;
+    padding-left: 1em;
   }
 }
 </style>

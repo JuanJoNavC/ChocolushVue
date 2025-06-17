@@ -32,8 +32,8 @@ onMounted(() => {
                 </div>                
               </div>
               <button type="submit" class="submit-button">
-                  Insta Cum Aqui
-                </button>
+                  Ver productos...
+              </button>
             </div>
             
             
@@ -367,9 +367,8 @@ onMounted(() => {
 
 .hero-main-img {
   object-fit: cover;
-  width: auto;
+  width: 100%;
   height: 100%;
-
 }
 
 .hero-image-overlay::after { /* Using pseudo-element for gradient */
