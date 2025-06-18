@@ -15,24 +15,27 @@
         </router-link>
       </li>
       <li class="nav-item">
-        <router-link to="/brands">
-          <DefaultButtonComponent text="Brand"/>
+        <router-link to="/admin/productos">
+          <DefaultButtonComponent text="Productos"/>
         </router-link>
       </li>
       <li class="nav-item">
-        <router-link to="/products">
-          <DefaultButtonComponent text="Productos"/>
+        <router-link to="/admin/facturas">
+          <DefaultButtonComponent text="Facturas"/>
+        </router-link>
+      </li>
+      <li class="nav-item">
+        <router-link to="/admin/clientes">
+          <DefaultButtonComponent text="Clientes"/>
         </router-link>
       </li>
     </ul>
 
     <ul class="navbar__user-section desktop-nav-items">
       <li class="nav-item">
-        <div class="circle-nav">
-          <router-link to="/user-profile">
-            <i class="fas fa-user"></i>
-          </router-link>
-        </div>
+        <router-link to="/user-profile">
+          <i class="fas fa-user"></i>
+        </router-link>
       </li>
     </ul>
 
@@ -58,9 +61,9 @@
             <DefaultButtonComponent text="Productos"/>
           </router-link>
         </li>
-        <li class="nav-item" @click="isMenuOpen = false">
+        <li class="nav-item offcanvas-user-icon" @click="isMenuOpen = false">
           <router-link to="/user-profile">
-            <DefaultButtonComponent text="Iniciar Sesion"/>
+            <i class="fas fa-user"></i>
           </router-link>
         </li>
       </ul>
@@ -70,7 +73,7 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted, defineProps } from 'vue';
-import DefaultButtonComponent from './DefaultButtonComponent.vue';
+import DefaultButtonComponent from '../DefaultButtonComponent.vue';
 
 const props = defineProps({
   heroElementRef: {
@@ -133,12 +136,11 @@ onUnmounted(() => {
   align-items: center;
   height: 6em;
   padding: 0 1.5em;
-  position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   justify-content: space-between;
-  background-color: transparent;
+  background-color: white;
   transition: background-color 0.3s ease-in-out;
   z-index: 1000;
 }
@@ -198,7 +200,6 @@ onUnmounted(() => {
 .navbar .nav-item i {
   font-size: 1.5em;
   color: #3c0d0d;
-  transition: 0.5s;
 }
 .navbar .nav-item i:hover {
   color: #a0522d;
@@ -341,36 +342,5 @@ onUnmounted(() => {
     font-size: 1.8em;
     padding-left: 1em;
   }
-}
-
-.circle-nav {
-    width: 50px;
-    height: 50px; 
-
-    border-radius: 50%;
-
-    background-color: #ffffff;
-
-    display: flex;
-    justify-content: center;
-    align-items: center;
-
-    /* Optional: Add a smooth transition for hover effects */
-    transition: all 0.3s ease;
-
-    /* Optional: Change cursor to pointer if it's clickable */
-    cursor: pointer;
-}
-.circle-nav-link {
-    /* Make the router-link itself a flex container */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    /* Important: Make sure the link takes up the full space of the circle-nav */
-    width: 100%;
-    height: 100%;
-    /* Remove default text decoration from link */
-    text-decoration: none;
-    color: inherit; /* Inherit color from the icon for consistency if needed */
 }
 </style>
