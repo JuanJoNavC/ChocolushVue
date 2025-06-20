@@ -33,7 +33,7 @@
 
     <ul class="navbar__user-section desktop-nav-items">
       <li class="nav-item">
-        <router-link to="/user-profile">
+        <router-link to="/iniciarSesion">
           <i class="fas fa-user"></i>
         </router-link>
       </li>
