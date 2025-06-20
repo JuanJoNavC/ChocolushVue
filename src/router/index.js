@@ -8,6 +8,7 @@ import ClientCreateView from '../views/Admin/Customer/ClientCreateView.vue'
 import IndexViewFacturas from '../views/Admin/Facturas/IndexViewFacturas.vue'
 import FacturasDetailView from '../views/Admin/Facturas/FacturasDetailView.vue'
 import IniciarSesionView from '../views/IniciarSesionView.vue'
+import ProductsEdit from '../views/Admin/Products/ProductsEdit.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -26,6 +27,11 @@ const router = createRouter({
       path: '/admin/productos/crear',
       name: 'crear productos',
       component: ProductsCreate,
+    },
+    {
+      path: '/admin/productos/editar/:id',
+      name: 'editar productos',
+      component: ProductsEdit,
     },
     {
       path: '/admin/clientes',

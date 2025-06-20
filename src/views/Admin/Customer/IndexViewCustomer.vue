@@ -2,16 +2,19 @@
 import axios from 'axios';
 import NavBarAdminComponent from '../../../components/admin/NavBarAdminComponent.vue';
 import { ref, onMounted } from 'vue';
-import { useRouter } from 'vue-router'; // Keep this import
+import { useRouter } from 'vue-router';
+import LoaderComponent from '../../../components/LoaderComponent.vue';
 
 // Reactive variable to store the clients fetched from the API
 const clients = ref([]); // Changed from 'customers' to 'clients'
 const API_BASE_URL = import.meta.env.VITE_CONNECTION_STRING;
+const loading  = ref(false);
 
 const router = useRouter(); // Uncommented for navigation
 
 // Function to fetch clients from the API
-const fetchClients = async () => { // Renamed function for clarity
+const fetchClients = async () => {
+    loading.value = true; 
     try {
         const response = await axios.get(`${API_BASE_URL}/api/Cliente`); // Ensure this is the correct endpoint
         clients.value = response.data; // Assign the fetched data to the reactive 'clients' variable
@@ -19,6 +22,8 @@ const fetchClients = async () => { // Renamed function for clarity
     } catch (error) {
         console.error('Error fetching clients:', error);
         // Optionally, set an error message or state here
+    } finally {
+        loading.value = false; 
     }
 };
 
@@ -101,7 +106,10 @@ onMounted(() => {
                     </tr>
                 </tbody>
             </table>
-            <p v-if="clients.length === 0" class="loading-message">No se encontraron clientes o aún están cargando...</p>
+            <div v-if="loading" class="loader-wrapper">
+                <LoaderComponent />
+                <p class="loading-message">Cargando clientes...</p>
+            </div>
         </div>
     </div>
 </template>
@@ -192,7 +200,7 @@ onMounted(() => {
 }
 
 .tableadmin tr:hover {
-    background-color: #FAD0C4;
+    background-color: #fbebe7;
 }
 
 .customer-image { /* This class is no longer used for clients, can be removed if not used elsewhere */

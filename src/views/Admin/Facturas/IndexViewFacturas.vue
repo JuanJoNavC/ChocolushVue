@@ -3,15 +3,18 @@ import axios from 'axios';
 import NavBarAdminComponent from '../../../components/admin/NavBarAdminComponent.vue';
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+import LoaderComponent from '../../../components/LoaderComponent.vue';
 
 // Reactive variable to store the invoices fetched from the API
 const invoices = ref([]);
 const API_BASE_URL = import.meta.env.VITE_CONNECTION_STRING;
+const loading  = ref(false);
 
 const router = useRouter();
 
 // Function to fetch invoices from the API
 const fetchInvoices = async () => {
+    loading.value = true; 
     try {
         const response = await axios.get(`${API_BASE_URL}/api/DTOFactura/facturas`);
         invoices.value = response.data;
@@ -19,7 +22,10 @@ const fetchInvoices = async () => {
     } catch (error) {
         console.error('Error fetching invoices:', error);
         // Optionally, set an error message or state here
+    } finally {
+        loading.value = false; 
     }
+    
 };
 
 // Function to format date for display
@@ -84,11 +90,12 @@ onMounted(() => {
                             </button>
                         </td>
                     </tr>
-                    <tr v-else>
-                        <td colspan="9" class="loading-message">No se encontraron facturas o aún están cargando...</td>
-                    </tr>
                 </tbody>
             </table>
+            <div v-if="loading" class="loader-wrapper">
+                <LoaderComponent />
+                <p class="loading-message">Cargando facturas...</p>
+            </div>
         </div>
     </div>
 </template>
@@ -180,7 +187,7 @@ onMounted(() => {
 }
 
 .tableadmin tr:hover {
-    background-color: #FAD0C4;
+    background-color: #fbebe7;
 }
 
 .actions-cell {
@@ -213,7 +220,6 @@ onMounted(() => {
     color: #664400;
     margin-top: 1em;
     font-style: italic;
-    text-align: center;
 }
 
 /* New button style for "Ver detalle" */

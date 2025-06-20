@@ -2,33 +2,28 @@
 import axios from 'axios';
 import NavBarAdminComponent from '../../../components/admin/NavBarAdminComponent.vue';
 import { ref, onMounted } from 'vue'; // Import ref and onMounted for reactive data and lifecycle hook
-import { useRouter } from 'vue-router';
+import LoaderComponent from '../../../components/LoaderComponent.vue';
 
 // Reactive variable to store the products fetched from the API
 const products = ref([]);
 const API_BASE_URL = import.meta.env.VITE_CONNECTION_STRING;
+const loading  = ref(false);
 
-// If using Vue Router:
-// const router = useRouter();
 
 // Function to fetch products from the API
 const fetchProducts = async () => {
-    try {
-        const response = await axios.get(`${API_BASE_URL}/api/Producto`);
-        products.value = response.data; // Assign the fetched data to the reactive 'products' variable
-        console.log('Products fetched:', products.value);
-    } catch (error) {
-        console.error('Error fetching products:', error);
-        // Optionally, set an error message or state here
-    }
+  loading.value = true; 
+  try {
+    const response = await axios.get(`${API_BASE_URL}/api/Producto`);
+    products.value = response.data;
+    console.log('Products fetched:', products.value);
+  } catch (error) {
+    console.error('Error fetching products:', error);
+  } finally {
+    loading.value = false; 
+  }
 };
 
-// Placeholder functions for edit and delete actions
-const editProduct = (productId) => {
-    console.log(`Edit product with ID: ${productId}`);
-    // In a real application, you would navigate to an edit form or open a modal
-    // Example: router.push(`/admin/products/edit/${productId}`);
-};
 
 const deleteProduct = async (productId) => {
     if (confirm(`Are you sure you want to delete product with ID: ${productId}?`)) {
@@ -55,22 +50,21 @@ onMounted(() => {
         <NavBarAdminComponent />
         <div class="table-container">
             <div class="header-section">
-                <h1 class="table-title">Product Management</h1>
+                <h1 class="table-title">Gestion de productos</h1>
                 <router-link to="/admin/productos/crear" class="create-product-button">
                     <i class="fas fa-plus-circle"></i> Crear Nuevo Producto
                 </router-link>
             </div>
-
             <table class="tableadmin">
                 <thead>
                     <tr>
                         <th>ID</th>
-                        <th>Image</th>
-                        <th>Name</th>
-                        <th>Price</th>
+                        <th>Imagen</th>
+                        <th>Nombre</th>
+                        <th>Precio</th>
                         <th>Stock</th>
-                        <th>Category</th>
-                        <th>Brand</th>
+                        <th>Categoria</th>
+                        <th>Marcas</th>
                         <th>Description</th>
                         <th>Acciones</th>
                     </tr>
@@ -88,13 +82,18 @@ onMounted(() => {
                         <td>{{ product.PROD_BRAND }}</td>
                         <td>{{ product.PROD_DESCCORTA }}</td>
                         <td class="actions-cell">
-                            <i @click="editProduct(product.PROD_ID)" class="fas fa-edit action-icon edit-icon" title="Edit Product"></i>
+                            <router-link :to="`/admin/productos/editar/${product.PROD_ID}`" class="action-link edit-link">
+                                <i class="fas fa-edit action-icon edit-icon" title="Edit Product"></i>
+                            </router-link>
                             <i @click="deleteProduct(product.PROD_ID)" class="fas fa-trash-alt action-icon delete-icon" title="Delete Product"></i>
                         </td>
                     </tr>
                 </tbody>
             </table>
-            <p v-if="products.length === 0" class="loading-message">No products found or still loading...</p>
+            <div v-if="loading" class="loader-wrapper">
+                <LoaderComponent />
+                <p class="loading-message">Cargando productos...</p>
+            </div>
         </div>
     </div>
 </template>
@@ -184,7 +183,7 @@ onMounted(() => {
 }
 
 .tableadmin tr:hover {
-    background-color: #FAD0C4;
+    background-color: #fbebe7;
 }
 
 .product-image {

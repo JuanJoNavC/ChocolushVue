@@ -76,46 +76,46 @@ const cancelCreation = () => {
     <div style="background-color: #FFF2E0; min-height: 100vh;">
         <NavBarAdminComponent />
         <div class="form-container">
-            <h1 class="form-title">Create New Product</h1>
+            <h1 class="form-title">Añadir un producto</h1>
 
             <form @submit.prevent="createProduct" class="product-form">
                 <div class="form-group">
-                    <label for="name">Product Name:</label>
+                    <label for="name">Nombre</label>
                     <input type="text" id="name" v-model="product.PROD_NOMBRE" required />
                 </div>
 
                 <div class="form-group">
-                    <label for="price">Price:</label>
+                    <label for="price">Precio</label>
                     <input type="number" id="price" v-model.number="product.PROD_PRECIO" required min="0.01" step="0.01" />
                 </div>
 
                 <div class="form-group">
-                    <label for="stock">Stock:</label>
+                    <label for="stock">Stock</label>
                     <input type="number" id="stock" v-model.number="product.PROD_STOCK" required min="0" />
                 </div>
 
                 <div class="form-group">
-                    <label for="category">Category:</label>
+                    <label for="category">Categoria</label>
                     <input type="text" id="category" v-model="product.PROD_CATEGORIA" required />
                 </div>
 
                 <div class="form-group">
-                    <label for="brand">Brand:</label>
+                    <label for="brand">Marca</label>
                     <input type="text" id="brand" v-model="product.PROD_BRAND" required />
                 </div>
 
                 <div class="form-group">
-                    <label for="fullDescription">Full Description:</label>
+                    <label for="fullDescription">Descripcion completa</label>
                     <textarea id="fullDescription" v-model="product.PROD_DESC" rows="5" required></textarea>
                 </div>
 
                 <div class="form-group">
-                    <label for="shortDescription">Short Description:</label>
+                    <label for="shortDescription">Descripcion corta</label>
                     <textarea id="shortDescription" v-model="product.PROD_DESCCORTA" rows="3" required></textarea>
                 </div>
 
                 <div class="form-group">
-                    <label for="image">Image URL:</label>
+                    <label for="image">URL de la imagen</label>
                     <input type="url" id="image" v-model="product.PROD_IMG" required placeholder="http://example.com/image.jpg" />
                     <img v-if="product.PROD_IMG" :src="product.PROD_IMG" alt="Product Preview" class="image-preview" />
                 </div>
