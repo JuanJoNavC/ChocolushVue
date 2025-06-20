@@ -121,204 +121,212 @@ const login = async () => {
 </script>
 
 <style scoped>
+/* Ensure HTML and body take full height */
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
 .navbar{
     background-color: white;
+    /* If your navbar is fixed, you'll need its height here */
+    position: fixed; /* Assuming your NavBarComponent is fixed */
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
 }
 
-/* Tu CSS se mantiene EXACTAMENTE igual que en tu último envío. */
 /* GENERAL LAYOUT */
 .login-page-wrapper {
-  display: flex;
-  flex-direction: column; /* Apila el navbar y el contenido */
-  min-height: 100vh; /* Asegura que la página ocupe al menos toda la altura de la ventana */
-  background-color: #FFF2E0; /* El color de fondo que tenías */
+    display: flex;
+    flex-direction: column; /* Stacks the navbar and content */
+    height: 100vh; /* Ensures the page occupies at least the entire viewport height */
+    background-color: #FFF2E0; /* Your background color */
+    /* If navbar is fixed, pad-top the wrapper by navbar height */
+    padding-top: 6em; /* Adjust this to match your NavBarComponent's height */
+    box-sizing: border-box; /* Include padding in the element's total width and height */
 }
 
-/* Espaciador para el Navbar fijo */
+/* This spacer is no longer needed if .login-page-wrapper has padding-top */
 .navbar-spacer {
-  height: 6em; /* Altura del navbar (ajusta si es diferente) */
-  width: 100%;
+    display: none; /* Hide the spacer as padding-top handles the space */
 }
 
-/* Contenedor principal de las dos columnas */
+/* Main container for the two columns */
 .login-content-area {
-  flex-grow: 1; /* Permite que el contenido crezca y ocupe el espacio restante */
-  display: flex; /* Habilita Flexbox para las columnas */
-  justify-content: center; /* Centra el contenido horizontalmente */
-  align-items: center; /* Centra el contenido verticalmente */
-  padding: 2em; /* Espaciado alrededor del área de contenido */
-  /* Asegura que el contenedor tenga una altura para que los hijos con height: 100% funcionen */
-  min-height: calc(100vh - 6em - 4em); /* 100vh - altura_navbar - (padding_superior + padding_inferior) */
+    flex-grow: 1; /* Allows content to grow and occupy remaining space */
+    display: flex; /* Enables Flexbox for columns */
+    justify-content: center; /* Centers content horizontally */
+    align-items: stretch; /* <--- KEY CHANGE: Makes children stretch to fill height */
+    /* Remove min-height here; it's handled by flex-grow */
 }
 
-/* SECCIÓN MEDIA (IZQUIERDA) */
+/* MEDIA SECTION (LEFT) */
 .login-media-section {
-  flex: 1; /* Ocupa 1 parte del espacio */
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background-color: #1a1a1a; /* Fondo oscuro como en la imagen de referencia */
-  /* min-height: 500px; */ /* Eliminado para permitir que la altura sea dinámica o del 100% */
-  height: 100%; /* Asegura que ocupe el 100% de la altura de su contenedor padre flex */
-  max-width: 50%; /* Limita el ancho en desktop */
-  padding: 0; /* <--- CAMBIO: Eliminar padding para que la imagen ocupe TODO el espacio*/
-  border-radius: 10px 0 0 10px; /* Bordes redondeados solo a la izquierda */
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-  overflow: hidden; /* <--- CAMBIO: Oculta cualquier parte de la imagen que se desborde*/
+    flex: 1; /* Occupies 1 part of the space */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #1a1a1a; /* Dark background as in the reference image */
+    height: 100%; /* Ensures it occupies 100% of its flex parent's height */
+    max-width: 50%; /* Limits width on desktop */
+    padding: 0;
+    border-radius: 10px 0 0 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
 }
 
 .media-image {
-  /* CAMBIOS CLAVE: Estas propiedades hacen que la imagen cubra completamente el área*/
-  width: 100%; /* Ocupa el 100% del ancho del contenedor*/
-  height: 100%; /* Ocupa el 100% del alto del contenedor*/
-  object-fit: cover; /* <--- Hace que la imagen cubra el área, recortando si es necesario para evitar espacios vacíos*/
-  display: block; /* Elimina espacio extra debajo de la imagen */
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
 }
 
-/* SECCIÓN DEL FORMULARIO (DERECHA) */
+/* FORM SECTION (RIGHT) */
 .login-form-section {
-  flex: 1; /* Ocupa 1 parte del espacio */
-  display: flex;
-  flex-direction: column; /* Cambiado a column para centrar contenido verticalmente */
-  justify-content: center; /* Centra el contenido verticalmente */
-  align-items: center; /* Centra el contenido horizontalmente */
-  background-color: #ffffff; /* Fondo blanco para el formulario */
-  /* min-height: 500px; */ /* Eliminado para permitir que la altura sea dinámica o del 100% */
-  height: 100%; /* Ocupa el 100% de la altura del .login-content-area */
-  max-width: 50%; /* Limita el ancho en desktop */
-  padding: 2em;
-  border-radius: 0 10px 10px 0; /* Bordes redondeados solo a la derecha */
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    flex: 1; /* Occupies 1 part of the space */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: #ffffff;
+    height: 100%; /* Occupies 100% of the .login-content-area's height */
+    width: 50%;
+    border-radius: 0 10px 10px 0;
 }
 
-/* Contenedor interno del formulario para padding y sombra */
+/* Inner form container for padding and shadow */
 .login-container {
-  width: 100%; /* El contenedor interno ocupa todo el espacio de su sección */
-  max-width: 380px; /* Limita el ancho del formulario para no ser demasiado grande */
-  padding: 30px;
-  font-family: Arial, sans-serif;
+    width: 100%;
+    max-width: 380px;
+    padding: 20px;
+    font-family: Arial, sans-serif;
+    height: 100%;
 }
 
 .login-title {
-  text-align: center;
-  color: #333;
-  margin-bottom: 25px;
-  font-size: 2em;
-  font-weight: bold;
+    text-align: center;
+    color: #333;
+    margin-bottom: 25px;
+    font-size: 2em;
+    font-weight: bold;
 }
 
 .form-group {
-  margin-bottom: 20px;
+    margin-bottom: 20px;
 }
 
 .form-label {
-  display: block;
-  margin-bottom: 8px;
-  color: #555;
-  font-weight: bold;
+    display: block;
+    margin-bottom: 8px;
+    color: #555;
+    font-weight: bold;
 }
 
 .form-input {
-  width: 100%;
-  padding: 12px 15px;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  font-size: 16px;
-  box-sizing: border-box;
-  background-color: #f8f8f8;
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 16px;
+    box-sizing: border-box;
+    background-color: #f8f8f8;
 }
 
 .form-input:focus {
-  border-color: #007bff;
-  outline: none;
-  box-shadow: 0 0 0 0.15rem rgba(0, 123, 255, 0.2);
+    border-color: #007bff;
+    outline: none;
+    box-shadow: 0 0 0 0.15rem rgba(0, 123, 255, 0.2);
 }
 
 .login-button {
-  width: 100%;
-  padding: 12px;
-  background-color: #4CAF50;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 18px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-  font-weight: bold;
-  margin-top: 15px;
+    width: 100%;
+    padding: 12px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 18px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    font-weight: bold;
+    margin-top: 15px;
 }
 
 .login-button:hover {
-  background-color: #45a049;
+    background-color: #45a049;
 }
 
 .error-message {
-  color: #dc3545;
-  text-align: center;
-  margin-top: 15px;
-  font-size: 14px;
+    color: #dc3545;
+    text-align: center;
+    margin-top: 15px;
+    font-size: 14px;
 }
 
 .forgot-password {
-  display: block;
-  text-align: right;
-  margin-top: 10px;
-  color: #007bff;
-  text-decoration: none;
-  font-size: 0.9em;
-  transition: color 0.3s ease;
+    display: block;
+    text-align: right;
+    margin-top: 10px;
+    color: #007bff;
+    text-decoration: none;
+    font-size: 0.9em;
+    transition: color 0.3s ease;
 }
 
 .forgot-password:hover {
-  color: #0056b3;
-  text-decoration: underline;
+    color: #0056b3;
+    text-decoration: underline;
 }
 
 .signup-text {
-  text-align: center;
-  margin-top: 25px;
-  color: #666;
-  font-size: 0.95em;
+    text-align: center;
+    margin-top: 25px;
+    color: #666;
+    font-size: 0.95em;
 }
 
 .signup-link {
-  color: #007bff;
-  text-decoration: none;
-  font-weight: bold;
+    color: #007bff;
+    text-decoration: none;
+    font-weight: bold;
 }
 
 .signup-link:hover {
-  text-decoration: underline;
+    text-decoration: underline;
 }
 
 /* RESPONSIVE DESIGN */
 @media (max-width: 900px) {
-  .login-content-area {
-    flex-direction: column;
-    padding: 1em;
-    min-height: auto;
-  }
+    .login-content-area {
+        flex-direction: column;
+        padding: 1em;
+        /* min-height: auto; This is okay, but handled by children height adjustments */
+        align-items: center; /* Center items when stacked */
+    }
 
-  .login-media-section,
-  .login-form-section {
-    max-width: 100%;
-    border-radius: 10px;
-    height: auto;
-    min-height: auto;
-  }
+    .login-media-section,
+    .login-form-section {
+        max-width: 100%;
+        border-radius: 10px; /* Full radius on mobile */
+        height: auto; /* Allow height to be determined by content on mobile */
+        /* min-height: auto; This is redundant */
+    }
 
-  .login-media-section {
-    min-height: 250px;
-    margin-bottom: 2em;
-    padding: 0; /* <--- CAMBIO: Asegurar que no hay padding aquí en móvil tampoco*/
-  }
+    .login-media-section {
+        min-height: 250px; /* Still give it a minimum height to be visible */
+        margin-bottom: 2em;
+    }
 
-  .login-form-section {
-    padding: 1.5em;
-  }
+    .login-form-section {
+        padding: 1.5em;
+    }
 
-  .login-container {
-    padding: 20px;
-  }
+    .login-container {
+        padding: 20px;
+    }
 }
 </style>
