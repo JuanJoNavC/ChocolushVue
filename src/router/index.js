@@ -7,6 +7,7 @@ import ClientEditView from '../views/Admin/Customer/ClientEditView.vue'
 import ClientCreateView from '../views/Admin/Customer/ClientCreateView.vue'
 import IndexViewFacturas from '../views/Admin/Facturas/IndexViewFacturas.vue'
 import FacturasDetailView from '../views/Admin/Facturas/FacturasDetailView.vue'
+import IniciarSesionView from '../views/IniciarSesionView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -50,6 +51,11 @@ const router = createRouter({
       path: '/admin/facturas/detalle/:id',
       name: 'facturasDetalle',
       component: FacturasDetailView,
+    },
+    {
+      path: '/iniciarSesion',
+      name: 'iniciarSesion',
+      component: IniciarSesionView,
     },
   ],
 })
