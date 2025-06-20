@@ -59,7 +59,7 @@
           </router-link>
         </li>
         <li class="nav-item" @click="isMenuOpen = false">
-          <router-link to="/user-profile">
+          <router-link to="/iniciarSesion">
             <DefaultButtonComponent text="Iniciar Sesion"/>
           </router-link>
         </li>

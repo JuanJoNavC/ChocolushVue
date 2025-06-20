@@ -62,7 +62,7 @@
           </router-link>
         </li>
         <li class="nav-item offcanvas-user-icon" @click="isMenuOpen = false">
-          <router-link to="/user-profile">
+          <router-link to="/iniciarSesion">
             <i class="fas fa-user"></i>
           </router-link>
         </li>
