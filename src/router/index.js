@@ -9,6 +9,7 @@ import IndexViewFacturas from '../views/Admin/Facturas/IndexViewFacturas.vue'
 import FacturasDetailView from '../views/Admin/Facturas/FacturasDetailView.vue'
 import IniciarSesionView from '../views/IniciarSesionView.vue'
 import ProductsEdit from '../views/Admin/Products/ProductsEdit.vue'
+import RegistroView from '../views/RegistroView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -62,6 +63,11 @@ const router = createRouter({
       path: '/iniciarSesion',
       name: 'iniciarSesion',
       component: IniciarSesionView,
+    },
+    {
+      path: '/registro',
+      name: 'registro',
+      component: RegistroView,
     },
   ],
 })

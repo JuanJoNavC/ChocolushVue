@@ -90,7 +90,6 @@ const login = async () => {
             </div>
             <button type="submit" class="login-button">Iniciar Sesión</button>
             <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
-            <a href="#" class="forgot-password">¿Olvidaste tu contraseña?</a>
           </form>
 
           <p class="signup-text">¿No tienes cuenta? <router-link to="/registro" class="signup-link">Regístrate</router-link></p>
