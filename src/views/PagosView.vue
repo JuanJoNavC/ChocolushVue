@@ -141,7 +141,7 @@ onMounted(async () => {
       carrito.value = JSON.parse(storedCarrito);
     } else {
       alert('Tu carrito está vacío. Redirigiendo a la página de productos.');
-      router.push('/ordenar'); // Redirigir si el carrito está vacío
+      router.push('/products'); // Redirigir si el carrito está vacío
       return;
     }
 
