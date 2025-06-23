@@ -4,23 +4,25 @@ import NavBarComponent from '../components/NavBarComponent.vue';
 import FooterComponent from '../components/FooterComponent.vue';
 import axios from 'axios';
 import { useRoute, useRouter } from 'vue-router';
+import LoaderComponent from '../components/LoaderComponent.vue';
 
-// Referencias reactivas
 const productos = ref([]);
 const carrito = ref([]);
-const isMobile = ref(false);
-const showCarritoVentana = ref(false); // Para controlar la visibilidad de la ventana emergente del carrito
-const route = useRoute(); // Para acceder a los parámetros de la URL
-const router = useRouter();
+const isMobile = ref(false); 
+const showCarritoVentana = ref(false);
+const showMobileBubble = ref(false); // NEW: Controls the mobile cart bubble visibility
 
-// URL base de la API (ajusta según tu .env)
+const route = useRoute();
+const router = useRouter();
+const loading = ref(false);
+
 const API_BASE_URL = import.meta.env.VITE_CONNECTION_STRING;
 
-// --- Lógica de Productos ---
 const fetchProductos = async () => {
+  loading.value = true;
   const brand = route.query.brand;
-  const apiUrl = brand 
-    ? `${API_BASE_URL}/api/Producto/brand?brand=${encodeURIComponent(brand)}` 
+  const apiUrl = brand
+    ? `${API_BASE_URL}/api/Producto/brand?brand=${encodeURIComponent(brand)}`
     : `${API_BASE_URL}/api/Producto`;
 
   try {
@@ -28,14 +30,12 @@ const fetchProductos = async () => {
     productos.value = response.data;
   } catch (error) {
     console.error("Error al cargar productos:", error);
-    productos.value = []; // Vaciar productos en caso de error
-    // Podrías mostrar un mensaje de error en la UI
+    productos.value = [];
+  } finally {
+    loading.value = false;
   }
 };
 
-// --- Lógica del Carrito ---
-
-// Función para escapar comillas (necesario si se insertan directamente en HTML atributos, aunque Vue lo maneja mejor)
 const escapeQuotes = (text) => {
   if (!text) return "";
   return text.replace(/'/g, "\\'").replace(/"/g, '\\"');
@@ -57,6 +57,10 @@ const agregarAlCarrito = (id, nombre, precio, imagen, cantidad = 1) => {
     });
   }
   guardarCarrito();
+  // Only auto-open the cart window if on mobile
+  if (isMobile.value) {
+    showCarritoVentana.value = true;
+  }
 };
 
 const cambiarCantidad = (index, cambio) => {
@@ -76,7 +80,6 @@ const eliminarProducto = (index) => {
   }
 };
 
-// Computadas para el resumen del carrito
 const subtotal = computed(() => {
   return carrito.value.reduce((total, producto) => total + producto.precio * producto.cantidad, 0);
 });
@@ -89,7 +92,6 @@ const total = computed(() => {
   return subtotal.value + iva.value;
 });
 
-// Guardar y cargar carrito en sessionStorage
 const guardarCarrito = () => {
   sessionStorage.setItem('carrito', JSON.stringify(carrito.value));
 };
@@ -101,7 +103,6 @@ const cargarCarrito = () => {
   }
 };
 
-// Validar stock antes de continuar
 const continuarCompra = async () => {
   if (carrito.value.length === 0) {
     alert('El carrito está vacío. Por favor, agrega productos antes de continuar.');
@@ -109,7 +110,7 @@ const continuarCompra = async () => {
   }
 
   console.log('--- Iniciando validación de stock ---');
-  console.log('Carrito actual:', JSON.parse(JSON.stringify(carrito.value))); // Clona para ver el estado actual
+  console.log('Carrito actual:', JSON.parse(JSON.stringify(carrito.value)));
 
   try {
     const response = await axios.get(`${API_BASE_URL}/api/Producto`);
@@ -168,8 +169,8 @@ const continuarCompra = async () => {
       router.push('/pagos');
     } else {
       alert('Debes iniciar sesión para continuar.');
-      console.log('Usuario no logueado. Redirigiendo a /login');
-      router.push('/login');
+      console.log('Usuario no logueado. Redirigiendo a /iniciarSesion');
+      router.push('/iniciarSesion');
     }
 
   } catch (error) {
@@ -185,50 +186,48 @@ const continuarCompra = async () => {
   }
 };
 
-// --- Lógica de la burbuja y ventana emergente del carrito ---
 const cantidadTotalCarrito = computed(() => {
   return carrito.value.reduce((total, producto) => total + producto.cantidad, 0);
 });
 
+// Watch for changes in isMobile or cantidadTotalCarrito to update showMobileBubble
+watch([isMobile, cantidadTotalCarrito], () => {
+  showMobileBubble.value = isMobile.value && cantidadTotalCarrito.value > 0;
+}, { immediate: true }); // immediate: true ensures it runs on initial load
+
 const toggleCarritoVentana = () => {
-  if (cantidadTotalCarrito.value > 0) {
-    showCarritoVentana.value = !showCarritoVentana.value;
-  } else {
-    console.log('El carrito está vacío. No se mostrará la ventana del carrito.');
-  }
+  showCarritoVentana.value = !showCarritoVentana.value;
 };
 
 const checkMobile = () => {
-  isMobile.value = window.innerWidth <= 768; // Ajusta el breakpoint si es necesario
+  isMobile.value = window.innerWidth <= 768;
+  // This will trigger the watch effect for showMobileBubble
+  if (!isMobile.value) {
+    showCarritoVentana.value = false; // Hide mobile cart if not on mobile
+  }
 };
 
-// Observar cambios en el carrito para actualizar la burbuja y ventana
 watch(carrito, () => {
-  // Cuando el carrito cambia, si está vacío, oculta la ventana
   if (carrito.value.length === 0) {
     showCarritoVentana.value = false;
   }
 }, { deep: true });
 
-// Lifecycle Hook
 onMounted(() => {
-  cargarCarrito(); // Cargar carrito al montar el componente
-  fetchProductos(); // Cargar productos al montar el componente
-  checkMobile(); // Verificar estado móvil al montar
-  window.addEventListener('resize', checkMobile); // Escuchar cambios de tamaño de pantalla
+  cargarCarrito();
+  fetchProductos();
+  checkMobile(); // Initial check
+  window.addEventListener('resize', checkMobile); // Keep for responsiveness
 });
 </script>
 
 <template>
   <div class="productos-page-wrapper">
-    <NavBarComponent class="navbar-products"/>
+    <NavBarComponent class="navbar-products" />
     <div class="navbar-spacer"></div>
 
     <div class="main-container">
       <section class="productos-grid">
-        <div v-if="productos.length === 0" class="no-products-message">
-          <p>No se encontraron productos disponibles.</p>
-        </div>
         <div v-for="(prod, index) in productos" :key="prod.PROD_ID" class="producto-card">
           <div class="product-content">
             <div class="product-info">
@@ -247,7 +246,7 @@ onMounted(() => {
         </div>
       </section>
 
-      <aside class="carrito-sidebar" v-if="!isMobile">
+      <aside class="carrito-sidebar">
         <div class="carrito-header">
           <h2>Carrito</h2>
         </div>
@@ -292,17 +291,23 @@ onMounted(() => {
         </div>
       </aside>
 
-      <div id="carrito-burbuja" class="carrito-burbuja" v-if="isMobile && cantidadTotalCarrito > 0" @click="toggleCarritoVentana">
+      <div id="carrito-burbuja" class="carrito-burbuja" v-show="showMobileBubble"
+        @click="toggleCarritoVentana">
         <i class="fas fa-shopping-cart"></i>
         <span id="carrito-cantidad">{{ cantidadTotalCarrito }}</span>
       </div>
 
-      <div id="carrito-ventana" :class="['carrito-ventana', { 'oculto': !showCarritoVentana }]" v-if="isMobile">
-        <div class="carrito-ventana-header">
-          <h2>Tu Carrito</h2>
-          <button class="close-btn" @click="showCarritoVentana = false"><i class="fas fa-times"></i></button>
-        </div>
+      <div v-if="loading" class="loader-overlay">
+        <LoaderComponent />
+        <p class="loading-message">Cargando productos...</p>
+      </div>
+
+      <div id="carrito-ventana" :class="['carrito-ventana', { 'oculto': !showCarritoVentana }]" class="mobile-only">
         <div class="carrito-ventana-contenido">
+          <div class="carrito-ventana-header">
+            <h2>Tu Carrito</h2>
+            <button class="close-btn" @click="toggleCarritoVentana"><i class="fas fa-times"></i></button>
+          </div>
           <div class="productosCarrito-popup">
             <p v-if="carrito.length === 0" class="carrito-vacio-text">El carrito está vacío...</p>
             <div v-else>
@@ -350,37 +355,8 @@ onMounted(() => {
 </template>
 
 <style scoped>
-/* Colores y Fuentes base */
-:root {
-  --main-bg-color: #FFF2E0; /* Light Peach */
-  --primary-color: #A63700; /* Dark Orange/Brown */
-  --secondary-color: #664400; /* Medium Brown */
-  --dark-accent: #332200; /* Darker Brown */
-  --light-text: #ffffff;
-  --dark-text: #333333;
-  --card-bg: #ffffff;
-  --border-color: #e0e0e0;
-  --button-hover: #8C4500;
-  --error-color: #A60000;
-  --success-color: #1a7d3a;
-
-  /* Fonts */
-  --font-primary: 'DynaPuff', cursive;
-  --font-secondary: 'Oswald', sans-serif;
-}
-
-body {
-  font-family: var(--font-secondary);
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  background-color: var(--main-bg-color);
-  color: var(--dark-text);
-}
-
-/* Navbar */
 .navbar-products {
-  background-color: var(--card-bg);
+  background-color: #ffffff;
   position: fixed;
   top: 0;
   left: 0;
@@ -390,20 +366,19 @@ body {
 }
 
 .navbar-spacer {
-  height: 6em; /* Ajusta según la altura real de tu navbar */
+  height: 6em;
 }
 
-/* Contenedor principal de la página de productos */
 .productos-page-wrapper {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  background-color: var(--main-bg-color);
+  background-color: #FFF2E0;
 }
 
 .main-container {
   display: flex;
-  flex-grow: 1; /* Permite que el contenido principal ocupe el espacio restante */
+  flex-grow: 1;
   padding: 2em;
   gap: 2em;
   max-width: 1400px;
@@ -412,25 +387,23 @@ body {
   box-sizing: border-box;
 }
 
-/* Sección de productos (Grid) */
 .productos-grid {
-  flex: 3; /* Ocupa más espacio que la barra lateral */
+  flex: 3;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); /* Columnas responsivas */
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 2em;
   padding: 1em 0;
 }
 
 .no-products-message {
-  grid-column: 1 / -1; /* Ocupa todo el ancho del grid */
-  text-align: center;
+  grid-column: 1 / -1;
   font-size: 1.5em;
-  color: var(--secondary-color);
+  color: #664400;
   padding: 2em;
 }
 
 .producto-card {
-  background-color: var(--card-bg);
+  background-color: #ffffff;
   border-radius: 12px;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
   overflow: hidden;
@@ -438,9 +411,9 @@ body {
   flex-direction: column;
   justify-content: space-between;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
-  min-height: 300px; /* Altura mínima para las tarjetas */
-  position: relative; /* Para posicionar el botón de añadir */
-  border: 1px solid var(--border-color);
+  min-height: 300px;
+  position: relative;
+  border: 1px solid #e0e0e0;
 }
 
 .producto-card:hover {
@@ -452,7 +425,7 @@ body {
   display: flex;
   flex-direction: column;
   height: 100%;
-  padding-bottom: 50px; /* Espacio para el botón flotante */
+  padding-bottom: 50px;
 }
 
 .product-info {
@@ -461,16 +434,16 @@ body {
 }
 
 .product-info h3 {
-  font-family: var(--font-primary);
+  font-family: 'DynaPuff', cursive;
   font-size: 1.5em;
-  color: var(--primary-color);
+  color: #A63700;
   margin-top: 0;
   margin-bottom: 0.5em;
 }
 
 .product-info .description {
   font-size: 0.95em;
-  color: var(--dark-text);
+  color: #333333;
   line-height: 1.4;
   margin-bottom: 1em;
   flex-grow: 1;
@@ -479,32 +452,32 @@ body {
 .product-info .price {
   font-size: 1.4em;
   font-weight: bold;
-  color: var(--secondary-color);
+  color: #664400;
   margin-top: 1em;
 }
 
 .product-image-container {
   width: 100%;
-  height: 180px; /* Altura fija para la imagen */
+  height: 180px;
   display: flex;
   justify-content: center;
   align-items: center;
   overflow: hidden;
-  background-color: #f0f0f0; /* Fondo si la imagen no cubre */
+  background-color: #ffffff;
 }
 
 .product-image {
   max-width: 100%;
   max-height: 100%;
-  object-fit: contain; /* Asegura que la imagen se ajuste sin recortarse */
+  object-fit: contain;
 }
 
 .add-to-cart-button {
   position: absolute;
   bottom: 15px;
   right: 15px;
-  background-color: var(--primary-color);
-  color: var(--light-text);
+  background-color: #A63700;
+  color: #ffffff;
   border-radius: 50%;
   width: 45px;
   height: 45px;
@@ -518,34 +491,36 @@ body {
 }
 
 .add-to-cart-button:hover {
-  background-color: var(--button-hover);
+  background-color: #8C4500;
   transform: scale(1.1);
 }
 
-/* Barra lateral del carrito */
+/* Cart Sidebar - Initially hidden by default (mobile-first), shown on larger screens */
 .carrito-sidebar {
-  flex: 1; /* Ocupa menos espacio */
-  background-color: var(--card-bg);
+  flex: 1;
+  background-color: #ffffff;
   border-radius: 12px;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
   padding: 1.5em;
-  height: fit-content; /* Se ajusta a su contenido */
-  position: sticky; /* Se mantiene en la parte superior al hacer scroll */
-  top: calc(6em + 2em); /* Navbar height + padding */
-  border: 1px solid var(--border-color);
+  height: fit-content;
+  position: sticky;
+  top: calc(6em + 2em);
+  border: 1px solid #e0e0e0;
+  display: none; /* Hidden by default for mobile-first */
 }
 
 .carrito-header h2 {
-  font-family: var(--font-primary);
-  color: var(--primary-color);
+  font-family: 'DynaPuff', cursive;
+  color: #A63700;
   text-align: center;
   margin-top: 0;
   margin-bottom: 1.5em;
   font-size: 1.8em;
 }
 
-.productosCarrito, .productosCarrito-popup {
-  max-height: 400px; /* Altura máxima para scroll en el carrito */
+.productosCarrito,
+.productosCarrito-popup {
+  max-height: 400px;
   overflow-y: auto;
   margin-bottom: 1.5em;
 }
@@ -563,7 +538,7 @@ body {
   gap: 1em;
   margin-bottom: 1em;
   padding-bottom: 1em;
-  border-bottom: 1px dashed var(--border-color);
+  border-bottom: 1px dashed #e0e0e0;
 }
 
 .producto-en-carrito:last-child {
@@ -576,7 +551,7 @@ body {
   height: 60px;
   object-fit: contain;
   border-radius: 8px;
-  border: 1px solid var(--border-color);
+  border: 1px solid #e0e0e0;
   padding: 5px;
   background-color: #f9f9f9;
 }
@@ -588,12 +563,12 @@ body {
 .detalles-producto p {
   margin: 0;
   font-size: 0.95em;
-  color: var(--dark-text);
+  color: #333333;
 }
 
 .detalles-producto strong {
   font-size: 1em;
-  color: var(--secondary-color);
+  color: #664400;
 }
 
 .item-actions {
@@ -606,7 +581,7 @@ body {
 .delete-item {
   background: none;
   border: none;
-  color: var(--error-color);
+  color: #A60000;
   cursor: pointer;
   font-size: 1.1em;
   padding: 0.2em;
@@ -627,8 +602,8 @@ body {
 }
 
 .quantity-controls button {
-  background-color: var(--primary-color);
-  color: var(--light-text);
+  background-color: #A63700;
+  color: #ffffff;
   border: none;
   border-radius: 4px;
   width: 25px;
@@ -642,19 +617,19 @@ body {
 }
 
 .quantity-controls button:hover {
-  background-color: var(--button-hover);
+  background-color: #8C4500;
 }
 
 .quantity-controls span {
   font-weight: bold;
   font-size: 1.1em;
-  color: var(--dark-text);
+  color: #333333;
   min-width: 20px;
   text-align: center;
 }
 
 .resumen {
-  border-top: 1px solid var(--border-color);
+  border-top: 1px solid #e0e0e0;
   padding-top: 1.5em;
 }
 
@@ -668,14 +643,14 @@ body {
 .resumen .total {
   font-weight: bold;
   font-size: 1.3em;
-  color: var(--secondary-color);
+  color: #664400;
 }
 
 .btn-continuar {
   width: 100%;
   padding: 12px 20px;
-  background-color: var(--success-color);
-  color: var(--light-text);
+  background-color: #1a7d3a;
+  color: #ffffff;
   border: none;
   border-radius: 8px;
   font-size: 1.1em;
@@ -695,17 +670,17 @@ body {
   opacity: 0.7;
 }
 
-/* Carrito Burbuja (Mobile) */
+/* Cart Bubble - Now controlled by v-show, default to none */
 .carrito-burbuja {
   position: fixed;
   bottom: 20px;
   right: 20px;
-  background-color: var(--primary-color);
-  color: var(--light-text);
+  background-color: #A63700;
+  color: #ffffff;
   border-radius: 50%;
   width: 60px;
   height: 60px;
-  display: flex;
+  display: flex; /* Changed from 'none' to 'flex' here for v-show to toggle */
   justify-content: center;
   align-items: center;
   font-size: 1.8em;
@@ -723,8 +698,8 @@ body {
   position: absolute;
   top: -5px;
   right: -5px;
-  background-color: var(--error-color);
-  color: var(--light-text);
+  background-color: #A60000;
+  color: #ffffff;
   border-radius: 50%;
   padding: 0.2em 0.5em;
   font-size: 0.6em;
@@ -733,30 +708,38 @@ body {
   text-align: center;
 }
 
-/* Carrito Ventana (Mobile Pop-up) */
+/* Mobile Cart Offcanvas - Always positioned fixed, shown by v-show, its display controlled by class in media query */
 .carrito-ventana {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.6); /* Overlay oscuro */
-  display: flex;
-  justify-content: flex-end; /* Abre desde la derecha */
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex; 
+  justify-content: flex-end;
   align-items: flex-start;
   z-index: 1000;
-  transition: transform 0.3s ease-out;
+  transition: transform 0.3s ease-out, opacity 0.3s ease-out;
   transform: translateX(0);
+  opacity: 1;
 }
 
 .carrito-ventana.oculto {
-  transform: translateX(100%); /* Desliza fuera de la vista */
+  transform: translateX(100%);
+  opacity: 0;
+  pointer-events: none;
 }
 
+.mobile-only {
+  display: none !important; /* Hidden by default (desktop-first approach here for offcanvas) */
+}
+
+
 .carrito-ventana-contenido {
-  background-color: var(--card-bg);
-  width: 85%; /* Ancho del pop-up en móvil */
-  max-width: 400px; /* Ancho máximo para el pop-up */
+  background-color: #ffffff;
+  width: 85%;
+  max-width: 400px;
   height: 100%;
   box-shadow: -5px 0 15px rgba(0, 0, 0, 0.2);
   padding: 1.5em;
@@ -769,13 +752,13 @@ body {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 1.5em;
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid #e0e0e0;
   padding-bottom: 1em;
 }
 
 .carrito-ventana-header h2 {
-  font-family: var(--font-primary);
-  color: var(--primary-color);
+  font-family: 'DynaPuff', cursive;
+  color: #A63700;
   margin: 0;
   font-size: 1.8em;
 }
@@ -784,22 +767,56 @@ body {
   background: none;
   border: none;
   font-size: 1.8em;
-  color: var(--secondary-color);
+  color: #664400;
   cursor: pointer;
   padding: 0;
 }
 
 .close-btn:hover {
-  color: var(--dark-accent);
+  color: #332200;
 }
 
 .productosCarrito-popup {
-  flex-grow: 1; /* Permite que el contenido del carrito se desplace si es largo */
+  flex-grow: 1;
   overflow-y: auto;
-  padding-right: 10px; /* Para el scrollbar */
+  padding-right: 10px;
 }
 
-/* Media Queries para responsividad */
+.loader-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(255, 255, 255, 0.8);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 1001;
+}
+
+.loading-message {
+  font-size: 1.2em;
+  color: #664400;
+  margin-top: 1em;
+}
+
+
+/* --- Media Queries for Responsive Display --- */
+
+@media (min-width: 769px) {
+  .carrito-sidebar {
+    display: block; /* Show sidebar on desktop */
+  }
+  .carrito-burbuja {
+    display: none !important; /* Force hide bubble on desktop */
+  }
+  .mobile-only {
+    display: none !important; /* Ensure offcanvas is hidden on desktop */
+  }
+}
+
 @media (max-width: 768px) {
   .main-container {
     flex-direction: column;
@@ -808,7 +825,7 @@ body {
   }
 
   .productos-grid {
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); /* Más pequeñas en móvil */
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
     gap: 1em;
   }
 
@@ -817,11 +834,16 @@ body {
   }
 
   .carrito-sidebar {
-    display: none; /* Oculta la barra lateral en móvil */
+    display: none; /* Hide sidebar on mobile */
   }
 
   .carrito-burbuja {
-    display: flex; /* Muestra la burbuja en móvil */
+    /* v-show handles its display, but we need to ensure its default is 'flex' when rendered */
+    /* No need for display: flex; here, as v-show will apply it directly */
+  }
+
+  .mobile-only {
+    display: flex !important; /* show offcanvas window itself, then v-show handles its visibility */
   }
 }
 
@@ -829,15 +851,18 @@ body {
   .main-container {
     padding: 0.5em;
   }
+
   .productos-grid {
-    grid-template-columns: 1fr; /* Una columna en pantallas muy pequeñas */
+    grid-template-columns: 1fr;
     gap: 1em;
   }
+
   .producto-card {
     min-height: 220px;
   }
+
   .carrito-ventana-contenido {
-    width: 95%; /* Más ancho en móviles muy pequeños */
+    width: 95%;
   }
 }
 </style>

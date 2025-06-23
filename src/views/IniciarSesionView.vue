@@ -73,7 +73,7 @@ const login = async () => {
 
     <div class="login-content-area">
       <div class="login-media-section">
-        <img src="/src/assets/images/LogInImg1.webp" alt="Personaje Caminando" class="media-image">
+        <img src="/src/assets/images/LogInImg2.webp" alt="Personaje Caminando" class="media-image">
       </div>
 
       <div class="login-form-section">
@@ -151,9 +151,11 @@ const login = async () => {
     overflow: hidden;
 }
 
+
+
 .media-image {
+    height: 800px;
     width: 100%;
-    height: 100%;
     object-fit: cover;
     display: block;
 }
