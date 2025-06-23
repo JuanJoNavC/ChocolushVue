@@ -310,7 +310,7 @@ async function procesarPago() {
     alert('Compra interna pagada exitosamente. ¡Gracias por tu dinero!');
 
     // Redirigir al usuario a una página de confirmación o al inicio
-    router.push('/confirmacion-compra'); // O a la home: router.push('/')
+    router.push('/products'); // O a la home: router.push('/')
 
   } catch (error) {
     console.error('Error en el proceso de pago:', error);
