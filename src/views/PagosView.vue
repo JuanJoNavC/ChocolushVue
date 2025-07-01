@@ -5,6 +5,7 @@ import axios from 'axios';
 import { useRouter } from 'vue-router';
 import NavBarComponent from '../components/NavBarComponent.vue';
 import FooterComponent from '../components/FooterComponent.vue';
+import LoaderComponent from '../components/LoaderComponent.vue';
 
 const API_BASE_URL = import.meta.env.VITE_CONNECTION_STRING;
 
@@ -22,6 +23,7 @@ const numeroCuenta = ref('');
 const usarDireccionRegistrada = ref(false);
 const direccionEspecifica = ref('');
 const clienteInfo = ref(null);
+const loading = ref(false);
 
 const subtotal = computed(() => {
   return carrito.value.reduce((sum, item) => sum + item.precio * item.cantidad, 0);
@@ -103,6 +105,7 @@ onMounted(async () => {
 });
 
 async function procesarPago() {
+  
   if (carrito.value.length === 0) {
     alert('El carrito está vacío. Por favor, agrega productos antes de continuar.');
     router.push('/ordenar');
@@ -125,6 +128,7 @@ async function procesarPago() {
   }
 
   try {
+    loading.value = true;
     const direccionFinal = usarDireccionRegistrada.value
       ? "Entrega en dirección registrada"
       : direccionEspecifica.value.trim();
@@ -182,12 +186,15 @@ async function procesarPago() {
   } catch (error) {
     console.error('Error en el proceso de pago:', error);
     let errorMessage = 'Hubo un error al procesar el pago. Por favor, intenta nuevamente.';
+    
     if (error.response && error.response.data && error.response.data.Message) {
       errorMessage = 'Error: ' + error.response.data.Message;
     } else if (error.message) {
       errorMessage = 'Error: ' + error.message;
     }
     alert(errorMessage);
+  }  finally{
+      loading.value = false;
   }
 }
 </script>
@@ -272,7 +279,12 @@ async function procesarPago() {
             </div>
           </form>
         </section>
+        
       </main>
+    </div>
+    <div v-if="loading" class="loader-overlay">
+      <LoaderComponent />
+      <p class="loading-message">Procesando su pago...</p>
     </div>
     <FooterComponent />
   </div>
@@ -312,6 +324,27 @@ async function procesarPago() {
   flex-direction: column;
   flex-grow: 1;
 }
+
+.loader-overlay {
+ position: fixed;
+ top: 0;
+ left: 0;
+ width: 100%;
+ height: 100%;
+ background-color: rgba(255, 255, 255, 0.8);
+ display: flex;
+ flex-direction: column;
+ justify-content: center;
+ align-items: center;
+ z-index: 1001;
+}
+
+.loading-message {
+ font-size: 1.2em;
+ color: #664400;
+ margin-top: 1em;
+}
+
 
 .mainPago {
   display: flex;
