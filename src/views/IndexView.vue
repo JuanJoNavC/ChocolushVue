@@ -37,7 +37,7 @@ onMounted(() => {
               <h5 class="card-title">Marcas de Prestigio</h5>
               <p class="card-text">Conozca las renombradas marcas que conforman nuestra oferta, garantizando calidad y sabor inigualables.</p>
               <div class="card-button-wrapper">
-                <a href="#" class="btn btn-primary">Explorar Marcas</a>
+                <router-link to="/brands"  class="btn btn-primary">Explorar Marcas</router-link>
               </div>
             </div>
           </div>

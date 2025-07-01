@@ -31,9 +31,12 @@ onMounted(() => {
                   <p class="form-info">Compra los mejores dulces</p>
                 </div>                
               </div>
-              <button type="submit" class="submit-button">
+              <router-link to="/products">
+                <button type="submit" class="submit-button">
                   Ver productos...
-              </button>
+                </button>
+              </router-link>
+              
             </div>
             
             

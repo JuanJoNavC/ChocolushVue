@@ -6,47 +6,70 @@ import axios from 'axios';
 import { useRoute, useRouter } from 'vue-router';
 import LoaderComponent from '../components/LoaderComponent.vue';
 
-const productos = ref([]);
-const carrito = ref([]);
-const isMobile = ref(false); 
-const showCarritoVentana = ref(false);
-const showMobileBubble = ref(false); // NEW: Controls the mobile cart bubble visibility
+// Reactive state variables
+const productos = ref([]); // This will hold ALL fetched products initially
+const carrito = ref([]); // Stores items in the cart
+const isMobile = ref(false); // Tracks if the user is on a mobile device
+const showCarritoVentana = ref(false); // Controls visibility of the mobile cart window
+const showMobileBubble = ref(false); // Controls the mobile cart bubble visibility
 
-const route = useRoute();
-const router = useRouter();
-const loading = ref(false);
+const route = useRoute(); // Vue Router's current route object
+const router = useRouter(); // Vue Router's router instance
+const loading = ref(false); // Indicates if products are currently being loaded
 
+// Search query for client-side filtering
+const searchQuery = ref('');
+
+// Base URL for API calls
 const API_BASE_URL = import.meta.env.VITE_CONNECTION_STRING;
 
-const fetchProductos = async () => {
-  loading.value = true;
-  const brand = route.query.brand;
+// Function to fetch products from the API initially (all or by brand)
+const fetchAllOrBrandProductos = async () => {
+  loading.value = true; // Set loading state to true
+  const brand = route.query.brand; // Get 'brand' from URL query parameters
+
+  // Construct API URL based on whether a brand filter is present
   const apiUrl = brand
     ? `${API_BASE_URL}/api/Producto/brand?brand=${encodeURIComponent(brand)}`
     : `${API_BASE_URL}/api/Producto`;
 
   try {
     const response = await axios.get(apiUrl);
-    productos.value = response.data;
+    productos.value = response.data; // Store the fetched products
+  
   } catch (error) {
     console.error("Error al cargar productos:", error);
-    productos.value = [];
+    productos.value = []; // Clear products on error
   } finally {
-    loading.value = false;
+    loading.value = false; // Set loading state to false
   }
 };
 
+// Computed property to filter products based on the search query
+// This is reactive: it re-runs whenever searchQuery or productos changes
+const filteredProductos = computed(() => {
+  if (!searchQuery.value) {
+    return productos.value; // If no search query, return all products
+  }
+  const query = searchQuery.value.toLowerCase(); // Convert query to lowercase for case-insensitive search
+  return productos.value.filter(prod =>
+    prod.PROD_NOMBRE.toLowerCase().includes(query) // Filter by product name
+  );
+});
+
+// Helper function to escape quotes (not directly used in this flow for filtering, but kept from original)
 const escapeQuotes = (text) => {
   if (!text) return "";
   return text.replace(/'/g, "\\'").replace(/"/g, '\\"');
 };
 
+// Function to add a product to the shopping cart
 const agregarAlCarrito = (id, nombre, precio, imagen, cantidad = 1) => {
-  const precioNumerico = parseFloat(precio.replace('$', ''));
+  const precioNumerico = parseFloat(precio.replace('$', '')); // Convert price string to number
   const productoExistente = carrito.value.find((item) => item.nombre === nombre);
 
   if (productoExistente) {
-    productoExistente.cantidad += cantidad;
+    productoExistente.cantidad += cantidad; // Increment quantity if product already in cart
   } else {
     carrito.value.push({
       id: id,
@@ -56,46 +79,52 @@ const agregarAlCarrito = (id, nombre, precio, imagen, cantidad = 1) => {
       imagen: imagen,
     });
   }
-  guardarCarrito();
-  // Only auto-open the cart window if on mobile
+  guardarCarrito(); // Save cart to session storage
   if (isMobile.value) {
-    showCarritoVentana.value = true;
+    showCarritoVentana.value = true; // Auto-open cart window on mobile
   }
 };
 
+// Function to change the quantity of an item in the cart
 const cambiarCantidad = (index, cambio) => {
   if (carrito.value[index]) {
     carrito.value[index].cantidad += cambio;
     if (carrito.value[index].cantidad <= 0) {
-      carrito.value.splice(index, 1);
+      carrito.value.splice(index, 1); // Remove item if quantity is zero or less
     }
-    guardarCarrito();
+    guardarCarrito(); // Save updated cart
   }
 };
 
+// Function to remove an item from the cart
 const eliminarProducto = (index) => {
   if (carrito.value[index]) {
-    carrito.value.splice(index, 1);
-    guardarCarrito();
+    carrito.value.splice(index, 1); // Remove item by index
+    guardarCarrito(); // Save updated cart
   }
 };
 
+// Computed property for cart subtotal
 const subtotal = computed(() => {
   return carrito.value.reduce((total, producto) => total + producto.precio * producto.cantidad, 0);
 });
 
+// Computed property for IVA (15% tax)
 const iva = computed(() => {
   return subtotal.value * 0.15;
 });
 
+// Computed property for total cart value
 const total = computed(() => {
   return subtotal.value + iva.value;
 });
 
+// Function to save cart to session storage
 const guardarCarrito = () => {
   sessionStorage.setItem('carrito', JSON.stringify(carrito.value));
 };
 
+// Function to load cart from session storage
 const cargarCarrito = () => {
   const carritoGuardado = sessionStorage.getItem('carrito');
   if (carritoGuardado) {
@@ -103,6 +132,7 @@ const cargarCarrito = () => {
   }
 };
 
+// Function to proceed to checkout, including stock validation
 const continuarCompra = async () => {
   if (carrito.value.length === 0) {
     alert('El carrito está vacío. Por favor, agrega productos antes de continuar.');
@@ -113,11 +143,13 @@ const continuarCompra = async () => {
   console.log('Carrito actual:', JSON.parse(JSON.stringify(carrito.value)));
 
   try {
+    // Fetch all products from API again to get the most current stock data for validation
     const response = await axios.get(`${API_BASE_URL}/api/Producto`);
     const productosAPI = response.data;
-    console.log('Productos obtenidos de la API:', productosAPI);
+    console.log('Productos obtenidos de la API (para validación de stock):', productosAPI);
 
     let errores = [];
+    // Iterate through items in the cart and validate against current stock from API
     for (const itemCarrito of carrito.value) {
       console.log(`Validando producto en carrito: ${itemCarrito.nombre}, Cantidad: ${itemCarrito.cantidad}`);
 
@@ -151,6 +183,7 @@ const continuarCompra = async () => {
       }
     }
 
+    // If there are any stock validation errors, alert the user
     if (errores.length > 0) {
       let mensajeError = 'Errores detectados en tu carrito:\n';
       errores.forEach(error => {
@@ -164,6 +197,7 @@ const continuarCompra = async () => {
     console.log('--- Validación de stock exitosa ---');
     const usuarioLogueado = sessionStorage.getItem('isAuthenticated') === 'true';
 
+    // Redirect based on user login status
     if (usuarioLogueado) {
       console.log('Usuario logueado. Redirigiendo a /pagos');
       router.push('/pagos');
@@ -186,38 +220,42 @@ const continuarCompra = async () => {
   }
 };
 
+// Computed property for the total quantity of items in the cart (for bubble)
 const cantidadTotalCarrito = computed(() => {
   return carrito.value.reduce((total, producto) => total + producto.cantidad, 0);
 });
 
-// Watch for changes in isMobile or cantidadTotalCarrito to update showMobileBubble
+// Watcher to control mobile cart bubble visibility
 watch([isMobile, cantidadTotalCarrito], () => {
   showMobileBubble.value = isMobile.value && cantidadTotalCarrito.value > 0;
-}, { immediate: true }); // immediate: true ensures it runs on initial load
+}, { immediate: true }); // Run immediately on component mount
 
+// Function to toggle the mobile cart window visibility
 const toggleCarritoVentana = () => {
   showCarritoVentana.value = !showCarritoVentana.value;
 };
 
+// Function to check and update mobile status based on window width
 const checkMobile = () => {
   isMobile.value = window.innerWidth <= 768;
-  // This will trigger the watch effect for showMobileBubble
   if (!isMobile.value) {
     showCarritoVentana.value = false; // Hide mobile cart if not on mobile
   }
 };
 
+// Watcher to hide mobile cart window if cart becomes empty
 watch(carrito, () => {
   if (carrito.value.length === 0) {
     showCarritoVentana.value = false;
   }
-}, { deep: true });
+}, { deep: true }); // Deep watch for changes within the carrito array
 
+// Lifecycle hook: runs after component is mounted to the DOM
 onMounted(() => {
-  cargarCarrito();
-  fetchProductos();
-  checkMobile(); // Initial check
-  window.addEventListener('resize', checkMobile); // Keep for responsiveness
+  cargarCarrito(); // Load cart from session storage
+  fetchAllOrBrandProductos(); // Fetch products initially
+  checkMobile(); // Initial check for mobile status
+  window.addEventListener('resize', checkMobile); // Add resize listener for responsiveness
 });
 </script>
 
@@ -227,8 +265,20 @@ onMounted(() => {
     <div class="navbar-spacer"></div>
 
     <div class="main-container">
+      <div class="search-bar-container">
+        <input
+          type="text"
+          v-model="searchQuery"
+          placeholder="Buscar productos por nombre..."
+          class="product-search-input"
+        />
+      </div>
+
       <section class="productos-grid">
-        <div v-for="(prod, index) in productos" :key="prod.PROD_ID" class="producto-card">
+        <div v-if="filteredProductos.length === 0 && !loading" class="no-products-message">
+          No se encontraron productos que coincidan con "{{ searchQuery }}".
+        </div>
+        <div v-for="(prod, index) in filteredProductos" :key="prod.PROD_ID" class="producto-card">
           <div class="product-content">
             <div class="product-info">
               <h3>{{ prod.PROD_NOMBRE }}</h3>
@@ -355,6 +405,31 @@ onMounted(() => {
 </template>
 
 <style scoped>
+/* Styles for the search input */
+.search-bar-container {
+  grid-column: 1 / -1; /* Make it span across all columns in the grid layout */
+  margin-bottom: 20px; /* Add some space below the search bar */
+  width: 100%;
+}
+
+.product-search-input {
+  width: 100%;
+  padding: 12px 15px;
+  font-size: 1.1em;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+  box-sizing: border-box; /* Include padding and border in the element's total width and height */
+}
+
+.product-search-input:focus {
+  outline: none;
+  border-color: #A63700;
+  box-shadow: 0 0 0 3px rgba(166, 55, 0, 0.2);
+}
+
+/* Base layout styles */
 .navbar-products {
   background-color: #ffffff;
   position: fixed;
@@ -366,7 +441,7 @@ onMounted(() => {
 }
 
 .navbar-spacer {
-  height: 6em;
+  height: 6em; /* Space to prevent content from going under fixed navbar */
 }
 
 .productos-page-wrapper {
@@ -385,6 +460,7 @@ onMounted(() => {
   margin: 0 auto;
   width: 100%;
   box-sizing: border-box;
+  flex-wrap: wrap; /* Allow items to wrap on smaller screens */
 }
 
 .productos-grid {
@@ -393,15 +469,18 @@ onMounted(() => {
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 2em;
   padding: 1em 0;
+  flex-grow: 1; /* Allow grid to take available space */
 }
 
 .no-products-message {
-  grid-column: 1 / -1;
+  grid-column: 1 / -1; /* Span full width in grid */
   font-size: 1.5em;
   color: #664400;
   padding: 2em;
+  text-align: center;
 }
 
+/* Product Card Styling */
 .producto-card {
   background-color: #ffffff;
   border-radius: 12px;
@@ -425,7 +504,7 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   height: 100%;
-  padding-bottom: 50px;
+  padding-bottom: 50px; /* Space for the add-to-cart button */
 }
 
 .product-info {
@@ -495,7 +574,7 @@ onMounted(() => {
   transform: scale(1.1);
 }
 
-/* Cart Sidebar - Initially hidden by default (mobile-first), shown on larger screens */
+/* Cart Sidebar Styling (Desktop) */
 .carrito-sidebar {
   flex: 1;
   background-color: #ffffff;
@@ -504,9 +583,9 @@ onMounted(() => {
   padding: 1.5em;
   height: fit-content;
   position: sticky;
-  top: calc(6em + 2em);
+  top: calc(6em + 2em); /* Sticks below navbar and spacer */
   border: 1px solid #e0e0e0;
-  display: none; /* Hidden by default for mobile-first */
+  display: none; /* Hidden by default for mobile-first approach */
 }
 
 .carrito-header h2 {
@@ -520,7 +599,7 @@ onMounted(() => {
 
 .productosCarrito,
 .productosCarrito-popup {
-  max-height: 400px;
+  max-height: 400px; /* Max height for scrollable cart items */
   overflow-y: auto;
   margin-bottom: 1.5em;
 }
@@ -670,7 +749,7 @@ onMounted(() => {
   opacity: 0.7;
 }
 
-/* Cart Bubble - Now controlled by v-show, default to none */
+/* Cart Bubble (Mobile) */
 .carrito-burbuja {
   position: fixed;
   bottom: 20px;
@@ -680,7 +759,7 @@ onMounted(() => {
   border-radius: 50%;
   width: 60px;
   height: 60px;
-  display: flex; /* Changed from 'none' to 'flex' here for v-show to toggle */
+  display: flex;
   justify-content: center;
   align-items: center;
   font-size: 1.8em;
@@ -708,7 +787,7 @@ onMounted(() => {
   text-align: center;
 }
 
-/* Mobile Cart Offcanvas - Always positioned fixed, shown by v-show, its display controlled by class in media query */
+/* Mobile Cart Offcanvas Window */
 .carrito-ventana {
   position: fixed;
   top: 0;
@@ -716,7 +795,7 @@ onMounted(() => {
   width: 100%;
   height: 100%;
   background-color: rgba(0, 0, 0, 0.6);
-  display: flex; 
+  display: flex;
   justify-content: flex-end;
   align-items: flex-start;
   z-index: 1000;
@@ -728,13 +807,12 @@ onMounted(() => {
 .carrito-ventana.oculto {
   transform: translateX(100%);
   opacity: 0;
-  pointer-events: none;
+  pointer-events: none; /* Prevents interaction when hidden */
 }
 
 .mobile-only {
-  display: none !important; /* Hidden by default (desktop-first approach here for offcanvas) */
+  display: none !important; /* Hidden by default; controlled by media query and v-show */
 }
-
 
 .carrito-ventana-contenido {
   background-color: #ffffff;
@@ -782,6 +860,7 @@ onMounted(() => {
   padding-right: 10px;
 }
 
+/* Loader Styling */
 .loader-overlay {
   position: fixed;
   top: 0;
@@ -805,6 +884,7 @@ onMounted(() => {
 
 /* --- Media Queries for Responsive Display --- */
 
+/* Desktop Styles (min-width: 769px) */
 @media (min-width: 769px) {
   .carrito-sidebar {
     display: block; /* Show sidebar on desktop */
@@ -815,17 +895,36 @@ onMounted(() => {
   .mobile-only {
     display: none !important; /* Ensure offcanvas is hidden on desktop */
   }
+  .main-container {
+    display: grid; /* Use CSS Grid for desktop layout */
+    grid-template-columns: 1fr 300px; /* 1fr for products, 300px for sidebar */
+    grid-template-areas:
+      "search search" /* Search bar spans both columns */
+      "products sidebar"; /* Products on left, sidebar on right */
+    gap: 2em; /* Ensure consistent gap between grid areas */
+  }
+  .productos-grid {
+    grid-area: products;
+  }
+  .carrito-sidebar {
+    grid-area: sidebar;
+  }
+  .search-bar-container {
+    grid-area: search;
+  }
 }
 
+/* Tablet & Mobile Styles (max-width: 768px) */
 @media (max-width: 768px) {
   .main-container {
+    display: flex; /* Revert to flexbox for mobile layout */
     flex-direction: column;
     padding: 1em;
     gap: 1.5em;
   }
 
   .productos-grid {
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); /* Smaller cards */
     gap: 1em;
   }
 
@@ -837,23 +936,23 @@ onMounted(() => {
     display: none; /* Hide sidebar on mobile */
   }
 
-  .carrito-burbuja {
-    /* v-show handles its display, but we need to ensure its default is 'flex' when rendered */
-    /* No need for display: flex; here, as v-show will apply it directly */
+  .mobile-only {
+    display: flex !important; /* Show offcanvas window itself, then v-show handles its visibility */
   }
 
-  .mobile-only {
-    display: flex !important; /* show offcanvas window itself, then v-show handles its visibility */
+  .search-bar-container {
+    order: -1; /* Place search bar at the very top on mobile */
   }
 }
 
+/* Smaller Mobile Screens (max-width: 480px) */
 @media (max-width: 480px) {
   .main-container {
     padding: 0.5em;
   }
 
   .productos-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr; /* Single column layout for products */
     gap: 1em;
   }
 
@@ -862,7 +961,7 @@ onMounted(() => {
   }
 
   .carrito-ventana-contenido {
-    width: 95%;
+    width: 95%; /* Make mobile cart window wider */
   }
 }
 </style>
